@@ -21,7 +21,7 @@ const splitIntoBullets = (markdown: string) => {
 
 export const summarizeToSlides = async (
   markdown: string,
-  config: JobConfig
+  _config: JobConfig
 ): Promise<SlidesJSON> => {
   if (process.env.QWEN_API_KEY) {
     // TODO: Integrate Vercel AI SDK + Qwen-Max using the schema from DESIGN.md.

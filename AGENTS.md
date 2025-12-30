@@ -32,7 +32,7 @@
 - PRs should include a short description, linked issues (if any), and screenshots for UI changes.
 
 ## Security & Configuration Tips
-- External services are optional; configure via env vars:
+- External services are optional; configure via `.env`/`.env.local` (see `.env.example`):
   - `DOCLING_URL` for PDF parsing.
   - `QWEN_API_KEY` for LLM summarization (stubbed today).
   - `REMOTION_RENDER_ENABLED` to enable MP4 generation in the pipeline.
