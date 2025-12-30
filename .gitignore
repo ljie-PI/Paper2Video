@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun-debug.log*
+
+# Env files
+.env
+.env.*.local
+
+# Local runtime artifacts
+storage/
+.tmp/
+
+# OS
+.DS_Store
+
+DESIGN.md
+TODO.md
