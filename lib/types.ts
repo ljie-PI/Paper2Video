@@ -47,5 +47,6 @@ export type JobRecord = {
   slides_json?: SlidesJSON;
   config: JobConfig;
   paths: JobPaths;
+  errorStage?: string | null;
   error?: string | null;
 };

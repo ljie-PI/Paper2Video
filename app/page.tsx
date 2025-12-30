@@ -348,6 +348,8 @@ export default function HomePage() {
                   const failed = job?.status === 'failed';
                   const active = !failed && !!job?.status && stage.activeOn.includes(job.status);
                   const done = !failed && !!job?.status && stage.doneOn.includes(job.status);
+                  const showError =
+                    failed && job?.error && job.errorStage === stage.id;
 
                   return (
                     <div
@@ -369,6 +371,11 @@ export default function HomePage() {
                         </span>
                       </div>
                       <p className="mt-1 text-sm text-slate-300">{stage.detail}</p>
+                      {showError ? (
+                        <div className="mt-3 rounded-lg bg-rose-500/20 px-3 py-2 text-xs text-rose-100">
+                          {job.error}
+                        </div>
+                      ) : null}
                     </div>
                   );
                 })}
