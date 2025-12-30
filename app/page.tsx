@@ -16,21 +16,40 @@ const statusMeta: Record<
   failed: { label: 'Failed', tone: 'bg-rose-100', text: 'text-rose-700' }
 };
 
-const stages: Array<{ id: JobStatus; title: string; detail: string }> = [
+const stages: Array<{
+  id: string;
+  title: string;
+  detail: string;
+  activeOn: JobStatus[];
+  doneOn: JobStatus[];
+}> = [
   {
     id: 'parsing',
-    title: 'Docling parsing',
-    detail: 'PDF → structured Markdown'
+    title: 'Parsing',
+    detail: 'PDF → structured Markdown',
+    activeOn: ['parsing'],
+    doneOn: ['generating', 'rendering', 'completed']
   },
   {
-    id: 'generating',
-    title: 'Qwen summarization',
-    detail: 'Markdown → slides JSON'
+    id: 'understanding',
+    title: 'Understanding',
+    detail: 'Markdown → slides JSON',
+    activeOn: ['generating'],
+    doneOn: ['rendering', 'completed']
+  },
+  {
+    id: 'composing',
+    title: 'Generating Slides',
+    detail: 'PptxGenJS layout',
+    activeOn: ['rendering'],
+    doneOn: ['completed']
   },
   {
     id: 'rendering',
-    title: 'PPTX + video',
-    detail: 'PptxGenJS + Remotion'
+    title: 'Generating Video',
+    detail: 'Remotion sequences + captions',
+    activeOn: ['rendering'],
+    doneOn: ['completed']
   }
 ];
 
@@ -128,7 +147,7 @@ export default function HomePage() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
         <header className="flex flex-col gap-4">
           <span className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Paper2Video Orchestrator
+            Paper2Video Atelier
           </span>
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
@@ -136,8 +155,8 @@ export default function HomePage() {
                 From dense papers to cinematic explainers.
               </h1>
               <p className="mt-3 max-w-2xl text-lg text-slate-600">
-                Upload a PDF, tune your narration, and let Docling + Qwen shape
-                slides, speaker notes, and a Remotion-ready video plan.
+                Upload a PDF, tune your narration, and generate slides, speaker
+                notes, and a final video.
               </p>
             </div>
             {job ? (
@@ -326,13 +345,9 @@ export default function HomePage() {
               </p>
               <div className="mt-6 flex flex-col gap-4">
                 {stages.map((stage) => {
-                  const active =
-                    job?.status === stage.id ||
-                    (job?.status === 'completed' && stage.id === 'rendering');
-                  const done =
-                    job?.status === 'completed' ||
-                    stages.findIndex((item) => item.id === job?.status) >
-                      stages.findIndex((item) => item.id === stage.id);
+                  const failed = job?.status === 'failed';
+                  const active = !failed && !!job?.status && stage.activeOn.includes(job.status);
+                  const done = !failed && !!job?.status && stage.doneOn.includes(job.status);
 
                   return (
                     <div
@@ -410,15 +425,7 @@ export default function HomePage() {
                       className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
                       href={`/api/jobs/${job.id}/files/pptx`}
                     >
-                      Download PPTX
-                    </a>
-                  ) : null}
-                  {job?.paths?.slides ? (
-                    <a
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-                      href={`/api/jobs/${job.id}/files/slides`}
-                    >
-                      Slides JSON
+                      Slides (.pptx)
                     </a>
                   ) : null}
                   {job?.paths?.srt ? (
@@ -427,6 +434,14 @@ export default function HomePage() {
                       href={`/api/jobs/${job.id}/files/srt`}
                     >
                       Captions (.srt)
+                    </a>
+                  ) : null}
+                  {job?.paths?.video ? (
+                    <a
+                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+                      href={`/api/jobs/${job.id}/files/video`}
+                    >
+                      Video (.mp4)
                     </a>
                   ) : null}
                 </div>
