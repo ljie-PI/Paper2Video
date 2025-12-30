@@ -1,8 +1,18 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { outputsDir, toRelativePath } from './storage';
+import { getPrompt, renderTemplate } from './prompts';
 
-const stubMarkdown = (fileName: string) => `# ${fileName}\n\n## Abstract\n- This is a placeholder summary generated locally.\n- Connect your Docling service to replace this output.\n\n## Method\n- Outline the pipeline stages.\n- Highlight key contributions.\n\n## Results\n- Add quantitative highlights.\n- Include notable ablations.\n\n## Conclusion\n- Summarize the impact and next steps.`;
+const stubTemplate = () => {
+  const template = getPrompt('docling-stub.md');
+  if (!template) {
+    throw new Error('Missing prompt: docling-stub.md');
+  }
+  return template;
+};
+
+const stubMarkdown = (fileName: string) =>
+  renderTemplate(stubTemplate(), { filename: fileName });
 
 export const convertPdfToMarkdown = async (pdfPath: string, jobId: string) => {
   const outputDir = outputsDir(jobId);

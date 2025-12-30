@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import type { JobConfig, SlidesJSON } from './types';
+import { getPrompt } from './prompts';
 
 const takeHeadings = (markdown: string) => {
   return markdown
@@ -23,6 +24,9 @@ export const summarizeToSlides = async (
   markdown: string,
   _config: JobConfig
 ): Promise<SlidesJSON> => {
+  const systemPrompt = getPrompt('slides-system.md');
+  void systemPrompt;
+
   if (process.env.QWEN_API_KEY) {
     // TODO: Integrate Vercel AI SDK + Qwen-Max using the schema from DESIGN.md.
     // Keeping a deterministic fallback for local dev without keys.
