@@ -70,6 +70,7 @@ export default function HomePage() {
   const [model, setModel] = useState('qwen-max');
   const [dragActive, setDragActive] = useState(false);
   const [job, setJob] = useState<JobRecord | null>(null);
+  const [outputSnapshot, setOutputSnapshot] = useState<JobRecord | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -95,6 +96,16 @@ export default function HomePage() {
     }, 2000);
 
     return () => clearInterval(interval);
+  }, [job]);
+
+  useEffect(() => {
+    if (!job) {
+      setOutputSnapshot(null);
+      return;
+    }
+    if (job.status !== 'failed') {
+      setOutputSnapshot(job);
+    }
   }, [job]);
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
@@ -141,6 +152,7 @@ export default function HomePage() {
   };
 
   const currentStatus = job?.status ?? 'pending';
+  const outputJob = job?.status === 'failed' ? outputSnapshot : job;
 
   return (
     <main className="min-h-screen px-6 py-12 md:px-12">
@@ -390,30 +402,15 @@ export default function HomePage() {
                     Slides JSON, PPTX, and video artifacts.
                   </p>
                 </div>
-                {job ? (
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      statusMeta[currentStatus].tone
-                    } ${statusMeta[currentStatus].text}`}
-                  >
-                    {statusMeta[currentStatus].label}
-                  </span>
-                ) : null}
               </div>
 
-              {job?.status === 'failed' ? (
-                <p className="mt-4 text-sm text-rose-600">
-                  {job.error ?? 'Pipeline failed. Check server logs for details.'}
-                </p>
-              ) : null}
-
-              {job?.slides_json ? (
+              {outputJob?.slides_json ? (
                 <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
                     Slide outline
                   </p>
                   <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                    {job.slides_json.slides.map((slide) => (
+                    {outputJob.slides_json.slides.map((slide) => (
                       <li key={slide.id} className="flex items-start gap-2">
                         <span className="mt-1 h-1.5 w-1.5 rounded-full bg-sky-400" />
                         <span>{slide.title}</span>
@@ -427,37 +424,37 @@ export default function HomePage() {
 
               <div className="mt-5 grid gap-3">
                 <div className="flex flex-wrap gap-3">
-                  {job?.paths?.pptx ? (
+                  {outputJob?.paths?.pptx ? (
                     <a
                       className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-                      href={`/api/jobs/${job.id}/files/pptx`}
+                      href={`/api/jobs/${outputJob.id}/files/pptx`}
                     >
                       Slides (.pptx)
                     </a>
                   ) : null}
-                  {job?.paths?.srt ? (
+                  {outputJob?.paths?.srt ? (
                     <a
                       className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-                      href={`/api/jobs/${job.id}/files/srt`}
+                      href={`/api/jobs/${outputJob.id}/files/srt`}
                     >
                       Captions (.srt)
                     </a>
                   ) : null}
-                  {job?.paths?.video ? (
+                  {outputJob?.paths?.video ? (
                     <a
                       className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-                      href={`/api/jobs/${job.id}/files/video`}
+                      href={`/api/jobs/${outputJob.id}/files/video`}
                     >
                       Video (.mp4)
                     </a>
                   ) : null}
                 </div>
                 <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
-                  {job?.paths?.video ? (
+                  {outputJob?.paths?.video ? (
                     <video
                       controls
                       className="w-full rounded-xl border border-slate-200"
-                      src={`/api/jobs/${job.id}/files/video`}
+                      src={`/api/jobs/${outputJob.id}/files/video`}
                     />
                   ) : (
                     <p>

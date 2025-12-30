@@ -26,14 +26,34 @@ export const convertPdfToMarkdown = async (pdfPath: string, jobId: string) => {
     const formData = new FormData();
     const blob = new Blob([buffer], { type: 'application/pdf' });
     formData.append('file', blob, path.basename(pdfPath));
+    const controller = new AbortController();
+    const timeoutMs = 30000;
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-    const response = await fetch(`${process.env.DOCLING_URL}/convert`, {
-      method: 'POST',
-      body: formData
-    });
+    let response: Response;
+
+    try {
+      response = await fetch(`${process.env.DOCLING_URL}/convert`, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('fetch timeouted');
+      }
+      if (error instanceof Error) {
+        const message = error.message?.trim() || 'unknown error';
+        throw new Error(`Docling request failed: ${message}`);
+      }
+      throw new Error('Docling request failed: unknown error');
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) {
-      throw new Error(`Docling failed: ${response.status}`);
+      const statusText = response.statusText ? ` ${response.statusText}` : '';
+      throw new Error(`Docling failed: ${response.status}${statusText}`);
     }
 
     const data = await response.json();
