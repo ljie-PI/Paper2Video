@@ -3,8 +3,12 @@ import { getJob } from '@/lib/job-store';
 
 export const runtime = 'nodejs';
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const job = await getJob(params.id);
+export async function GET(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const job = await getJob(id);
   if (!job) {
     return NextResponse.json({ error: 'Job not found.' }, { status: 404 });
   }

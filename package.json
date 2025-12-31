@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "bun run next dev",
+    "dev": "bun run scripts/dev.mjs",
     "build": "bun run next build",
     "start": "bun run start",
     "lint": "bun run next lint",
@@ -24,6 +24,7 @@
     "ai": "^4.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "extract-zip": "^2.0.1",
     "framer-motion": "^11.15.0",
     "lucide-react": "^0.468.0",
     "next": "15.1.6",
