@@ -155,7 +155,6 @@ export default function HomePage() {
 
   const currentStatus = job?.status ?? 'pending';
   const outputJob = job?.status === 'failed' ? outputSnapshot : job;
-  const hasVideo = Boolean(outputJob?.paths?.video);
 
   return (
     <main className="min-h-screen px-6 py-12 md:px-12">
@@ -226,7 +225,7 @@ export default function HomePage() {
             </div>
 
             <div className="mt-6 grid gap-4 md:grid-cols-[1.4fr_0.6fr]">
-              <div className="flex h-[540px] flex-col rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="flex h-[580px] flex-col rounded-2xl border border-slate-200 bg-white p-4">
                 <p className="text-sm font-semibold text-slate-700">PDF Preview</p>
                 {pdfFile ? (
                   <div className="mt-3 flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
@@ -412,41 +411,31 @@ export default function HomePage() {
               </div>
 
               {outputJob?.slides_json ? (
-                <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+                <div className="mt-4 flex max-h-[300px] flex-col rounded-2xl border border-slate-200 bg-white p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
                     Slide outline
                   </p>
-                  <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                    {outputJob.slides_json.slides.map((slide) => (
-                      <li key={slide.id} className="flex items-start gap-2">
-                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-sky-400" />
-                        <span>{slide.title}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="mt-3 min-h-0 flex-1 overflow-y-auto pr-1">
+                    <ul className="space-y-2 text-sm text-slate-600">
+                      {outputJob.slides_json.slides.map((slide) => (
+                        <li key={slide.id} className="flex items-start gap-2">
+                          <span className="mt-1 h-1.5 w-1.5 rounded-full bg-sky-400" />
+                          <span>{slide.title}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               ) : (
                 <p className="mt-4 text-sm text-slate-500">No outputs yet.</p>
               )}
 
               <div className="mt-5 grid gap-3">
-                {hasVideo ? (
-                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
-                    <video
-                      controls
-                      className="w-full rounded-xl border border-slate-200"
-                      src={`/api/jobs/${outputJob.id}/files/video`}
-                    />
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
-                    <p>
-                      Video rendering is prepared in the pipeline. Enable
-                      Remotion rendering to generate MP4 output.
-                    </p>
-                  </div>
-                )}
-
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500">
+                  {outputJob?.paths?.video
+                    ? 'Video output is ready for download.'
+                    : 'Video output is disabled or not yet rendered.'}
+                </div>
                 <div className="grid grid-cols-3 gap-3">
                   {outputJob?.paths?.pptx ? (
                     <a
