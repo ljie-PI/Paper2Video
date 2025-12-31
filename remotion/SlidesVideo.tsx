@@ -1,19 +1,34 @@
 import { AbsoluteFill, Sequence, useVideoConfig } from 'remotion';
 import type { SlidesJSON } from '@/lib/types';
 
+const parseBullets = (markdown: string) => {
+  const lines = markdown
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const bullets = lines
+    .map((line) => line.replace(/^[-*•]\s+/, '').trim())
+    .filter(Boolean);
+  return bullets.length ? bullets : lines;
+};
+
 export const SlidesVideo = ({ slides }: { slides: SlidesJSON }) => {
   const { fps } = useVideoConfig();
   let cursor = 0;
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#0b0f1a', color: '#f8fafc' }}>
-      {slides.slides.map((slide) => {
-        const duration = Math.round((slide.durationSec ?? 16) * fps);
+      {slides.slides.map((slide, index) => {
+        const duration = Math.round(16 * fps);
         const start = cursor;
         cursor += duration;
+        const bullets = parseBullets(slide.text_contents);
+        const imageLabel = slide.images?.[0]
+          ? `Image: ${slide.images[0].path}`
+          : 'No image selected';
 
         return (
-          <Sequence key={slide.id} from={start} durationInFrames={duration}>
+          <Sequence key={`${slide.title}-${index}`} from={start} durationInFrames={duration}>
             <AbsoluteFill
               style={{
                 padding: '140px 160px',
@@ -33,8 +48,8 @@ export const SlidesVideo = ({ slides }: { slides: SlidesJSON }) => {
                 {slide.title}
               </div>
               <div style={{ fontSize: 30, color: '#cbd5f5', lineHeight: 1.5 }}>
-                {slide.bullets.map((bullet) => (
-                  <div key={bullet} style={{ marginBottom: 16 }}>
+                {bullets.map((bullet) => (
+                  <div key={`${slide.title}-${bullet}`} style={{ marginBottom: 16 }}>
                     • {bullet}
                   </div>
                 ))}
@@ -46,7 +61,7 @@ export const SlidesVideo = ({ slides }: { slides: SlidesJSON }) => {
                   color: '#6ee7ff'
                 }}
               >
-                {slide.visualPrompt}
+                {imageLabel}
               </div>
             </AbsoluteFill>
           </Sequence>

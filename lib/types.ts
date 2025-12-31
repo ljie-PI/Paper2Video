@@ -15,17 +15,21 @@ export type JobConfig = {
   outputLanguage?: 'zh' | 'en';
 };
 
+export type SlideImage = {
+  path: string;
+  width: number;
+  height: number;
+};
+
 export type Slide = {
-  id: string;
   title: string;
-  bullets: string[];
-  speakerNotes: string;
-  visualPrompt?: string;
-  durationSec?: number;
+  text_contents: string;
+  images: SlideImage[];
+  tables: string[];
+  transcript: string;
 };
 
 export type SlidesJSON = {
-  title: string;
   slides: Slide[];
 };
 

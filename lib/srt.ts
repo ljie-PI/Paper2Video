@@ -21,13 +21,13 @@ export const generateSrt = async (slides: SlidesJSON, jobId: string) => {
   const lines: string[] = [];
 
   slides.slides.forEach((slide, index) => {
-    const duration = slide.durationSec ?? 16;
+    const duration = 16;
     const start = formatTimestamp(cursor);
     const end = formatTimestamp(cursor + duration);
 
     lines.push(String(index + 1));
     lines.push(`${start} --> ${end}`);
-    lines.push(`${slide.title} — ${slide.bullets.join('; ')}`);
+    lines.push(slide.transcript || slide.title);
     lines.push('');
 
     cursor += duration;

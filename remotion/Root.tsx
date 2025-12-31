@@ -3,29 +3,28 @@ import { SlidesVideo } from './SlidesVideo';
 import type { SlidesJSON } from '@/lib/types';
 
 const defaultSlides: SlidesJSON = {
-  title: 'Paper Summary',
   slides: [
     {
-      id: 'intro',
       title: 'Paper2Video Overview',
-      bullets: ['Docling parses PDF', 'Qwen builds slide JSON', 'Remotion renders MP4'],
-      speakerNotes: 'Introduce the pipeline and outputs.',
-      visualPrompt: 'Blueprint-style flow diagram from PDF to video.',
-      durationSec: 14
+      text_contents:
+        '- Docling parses PDF\n- LLM builds slide JSON\n- Remotion renders MP4',
+      images: [],
+      tables: [],
+      transcript: 'Introduce the pipeline and outputs.'
     },
     {
-      id: 'method',
       title: 'Key Contributions',
-      bullets: ['Structured Markdown extraction', 'Slide-ready summarization', 'Dual output: PPTX + MP4'],
-      speakerNotes: 'Focus on the differentiators.',
-      visualPrompt: 'Split-screen PPTX and video timelines.',
-      durationSec: 16
+      text_contents:
+        '- Structured Markdown extraction\n- Slide-ready summarization\n- Dual output: PPTX + MP4',
+      images: [],
+      tables: [],
+      transcript: 'Focus on the differentiators.'
     }
   ]
 };
 
 const totalFrames = (slides: SlidesJSON, fps: number) =>
-  slides.slides.reduce((sum, slide) => sum + Math.round((slide.durationSec ?? 16) * fps), 0);
+  slides.slides.reduce((sum) => sum + Math.round(16 * fps), 0);
 
 export const RemotionRoot = () => {
   const fps = 30;

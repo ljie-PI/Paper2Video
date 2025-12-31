@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 - `app/`: Next.js App Router pages and API routes (`app/page.tsx`, `app/api/**`).
-- `lib/`: pipeline logic and helpers (Docling stub, slides, PPTX/SRT, job store).
+- `lib/`: pipeline logic and helpers (Docling stub, generating, PPTX/SRT, job store).
 - `remotion/`: Remotion compositions used for video rendering.
 - `storage/`: local runtime artifacts (`uploads/`, `outputs/`, `jobs.json`), ignored by git.
 - `public/`: static assets (currently empty).

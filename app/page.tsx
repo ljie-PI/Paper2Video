@@ -31,8 +31,8 @@ const stages: Array<{
     doneOn: ['generating', 'rendering', 'completed']
   },
   {
-    id: 'understanding',
-    title: 'Understanding',
+    id: 'generating',
+    title: 'Generating',
     detail: 'Markdown → slides JSON',
     activeOn: ['generating'],
     doneOn: ['rendering', 'completed']
@@ -417,12 +417,12 @@ export default function HomePage() {
                   </p>
                   <div className="mt-3 min-h-0 flex-1 overflow-y-auto pr-1">
                     <ul className="space-y-2 text-sm text-slate-600">
-                      {outputJob.slides_json.slides.map((slide) => (
-                        <li key={slide.id} className="flex items-start gap-2">
-                          <span className="mt-1 h-1.5 w-1.5 rounded-full bg-sky-400" />
-                          <span>{slide.title}</span>
-                        </li>
-                      ))}
+                    {outputJob.slides_json.slides.map((slide, index) => (
+                      <li key={`${slide.title}-${index}`} className="flex items-start gap-2">
+                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-sky-400" />
+                        <span>{slide.title}</span>
+                      </li>
+                    ))}
                     </ul>
                   </div>
                 </div>

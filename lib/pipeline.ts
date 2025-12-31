@@ -1,19 +1,11 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { convertPdfToMarkdown } from './docling';
-import { generateSlides } from './slides';
+import { generateSlides, writeSlidesJson } from './generating';
 import { generatePptx } from './pptx';
 import { generateSrt } from './srt';
 import { getJob, updateJob } from './job-store';
 import { outputsDir, toRelativePath } from './storage';
-
-const writeSlidesJson = async (jobId: string, slides: unknown) => {
-  const outputDir = outputsDir(jobId);
-  await fs.mkdir(outputDir, { recursive: true });
-  const filePath = path.join(outputDir, 'slides.json');
-  await fs.writeFile(filePath, JSON.stringify(slides, null, 2));
-  return toRelativePath(filePath);
-};
 
 const ensurePlaceholderVideo = async (jobId: string) => {
   if (!process.env.REMOTION_RENDER_ENABLED) return undefined;
@@ -75,10 +67,10 @@ const runPipeline = async (jobId: string) => {
   });
 
   await updateJob(jobId, { status: 'generating' });
-  const slides = await runStage('understanding', async () => {
+  const slides = await runStage('generating', async () => {
     return generateSlides(markdown, job.config);
   });
-  const slidesPath = await runStage('understanding', async () => {
+  const slidesPath = await runStage('generating', async () => {
     return writeSlidesJson(jobId, slides);
   });
   await updateJob(jobId, {
