@@ -76,29 +76,41 @@ const callOpenAiCompatible = async (
   systemPrompt: string,
   userPrompt: string
 ) => {
-  const response = await fetch(buildOpenAiUrl(baseUrl), {
+  const url = buildOpenAiUrl(baseUrl);
+  const body = {
+    model,
+    temperature: LLM_TEMPERATURE,
+    max_tokens: LLM_MAX_TOKENS,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ]
+  };
+  const headers = {
+    Authorization: `Bearer ${apiKey}`,
+    'Content-Type': 'application/json'
+  };
+
+  const response = await fetch(url, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model,
-      temperature: LLM_TEMPERATURE,
-      max_tokens: Number.isFinite(LLM_MAX_TOKENS) ? LLM_MAX_TOKENS : 4096,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ]
-    })
+    headers,
+    body: JSON.stringify(body)
   });
 
+  const responseText = await response.text();
+  let responseBody: unknown = responseText;
+  try {
+    responseBody = responseText ? JSON.parse(responseText) : null;
+  } catch {
+    responseBody = { raw: responseText };
+  }
+
   if (!response.ok) {
-    const message = await response.text();
+    const message = responseText;
     throw new Error(`LLM request failed: ${response.status} ${message}`);
   }
 
-  const data = await response.json();
+  const data = responseBody as { choices?: Array<{ message?: { content?: unknown } }> };
   const content = data?.choices?.[0]?.message?.content;
   if (typeof content !== 'string') {
     throw new Error('LLM response missing content.');
@@ -123,7 +135,7 @@ const callAnthropic = async (
     },
     body: JSON.stringify({
       model,
-      max_tokens: Number.isFinite(LLM_MAX_TOKENS) ? LLM_MAX_TOKENS : 4096,
+      max_tokens: LLM_MAX_TOKENS,
       temperature: LLM_TEMPERATURE,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }]
@@ -161,7 +173,7 @@ const callGemini = async (
       contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
       generationConfig: {
         temperature: LLM_TEMPERATURE,
-        maxOutputTokens: Number.isFinite(LLM_MAX_TOKENS) ? LLM_MAX_TOKENS : 4096
+        maxOutputTokens: LLM_MAX_TOKENS
       }
     })
   });
@@ -185,7 +197,9 @@ export const requestLlmText = async (input: {
   userPrompt: string;
 }): Promise<string | null> => {
   const llmConfig = resolveLlmConfig(input.model?.trim() ?? null);
-  if (!llmConfig?.model) return null;
+  if (!llmConfig?.model) {
+    throw new Error('LLM model is required but was not provided.');
+  }
 
   if (llmConfig.provider === 'anthropic') {
     return callAnthropic(

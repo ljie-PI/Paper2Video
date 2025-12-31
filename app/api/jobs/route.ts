@@ -39,8 +39,11 @@ export async function POST(request: Request) {
   const outputLanguage =
     rawLanguage === 'zh' || rawLanguage === 'en' ? rawLanguage : undefined;
 
+  const modelValue = formData.get('model');
+  const model = typeof modelValue === 'string' ? modelValue : '';
+
   const config: JobConfig = {
-    model: String(formData.get('model') ?? 'qwen-max'),
+    model,
     enableVideo: parseBoolean(formData.get('enableVideo')),
     voiceClone: parseBoolean(formData.get('voiceClone')),
     ttsSpeed: Number(formData.get('ttsSpeed') ?? 1),

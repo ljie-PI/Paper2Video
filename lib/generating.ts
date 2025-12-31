@@ -112,7 +112,6 @@ const requestSlidesFromLlm = async (
       systemPrompt,
       userPrompt: markdown
     });
-    logger.debug('[generating] LLM response content:', responseText);
 
     if (!responseText) return null;
 

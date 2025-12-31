@@ -118,7 +118,6 @@ The JSON schema must be exactly:
 {
   "slides": [
     {
-
       "title": string,
       "text_contents": string (Markdown),
       "images": [
@@ -130,12 +129,10 @@ The JSON schema must be exactly:
       ],
       "tables": [
         string (Markdown)
-
       ],
       "transcript": string (Markdown)
     }
   ]
-
 }
 
 
@@ -178,14 +175,13 @@ Do NOT copy its wording.)
 
 {
   "slides": [
-
     {
-      "title": "Paper Title",
-
-      "text_contents": "- Author A\n- Author B\n- Conference 2024",
+      "title": "Latent Collaboration in Multi-Agent Systems",
+      "text_contents": "- Jiaru Zou, Xiyuan Yang, Ruizhong Qiu, Gaotang Li, Katherine Tieu, Pan Lu, Ke Shen, Hanghang Tong, Yejin Choi, Jingrui He, James Zou, Mengdi Wang, Ling Yang\n- University of Illinois Urbana-Champaign, Stanford University, Princeton University\n- 2025",
       "images": [],
       "tables": [],
-      "transcript": "This paper studies an important problem in modern machine learning and proposes a new approach to address it..."
+      "transcript": "This paper introduces LatentMAS, a framework that enables multi-agent systems (MAS) to collaborate purely within the continuous latent space. The authors are from the University of Illinois Urbana-Champaign, Stanford University, and Princeton University. The work
+ was done in 2025...."
     },
     {
       "title": "Method Overview",
@@ -199,7 +195,6 @@ Do NOT copy its wording.)
       ],
       "tables": [],
       "transcript": "The proposed method consists of three main components. You can think of them as stages in a pipeline, where each stage refines the information from the previous one..."
-
     }
   ]
 }

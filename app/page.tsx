@@ -67,7 +67,6 @@ export default function HomePage() {
   const [enableVideo, setEnableVideo] = useState(true);
   const [voiceClone, setVoiceClone] = useState(false);
   const [ttsSpeed, setTtsSpeed] = useState(1);
-  const [model] = useState('qwen-max');
   const [outputLanguage, setOutputLanguage] = useState<'en' | 'zh'>('en');
   const [dragActive, setDragActive] = useState(false);
   const [job, setJob] = useState<JobRecord | null>(null);
@@ -132,7 +131,6 @@ export default function HomePage() {
     formData.append('enableVideo', String(enableVideo));
     formData.append('voiceClone', String(voiceClone));
     formData.append('ttsSpeed', String(ttsSpeed));
-    formData.append('model', model);
     formData.append('outputLanguage', outputLanguage);
     if (voiceSample) formData.append('voiceSample', voiceSample);
 
