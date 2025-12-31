@@ -8,5 +8,9 @@ export const uploadsDir = (jobId: string) =>
 export const outputsDir = (jobId: string) =>
   path.join(storageRoot, 'outputs', jobId);
 
+export const jobDir = (jobId: string) => path.join(storageRoot, jobId);
+
+export const jobFile = (jobId: string) => path.join(jobDir(jobId), 'job.json');
+
 export const toRelativePath = (absolutePath: string) =>
   absolutePath.replace(process.cwd() + path.sep, '');

@@ -1,28 +1,26 @@
 import fs from 'fs/promises';
-import path from 'path';
 import type { JobRecord } from './types';
+import { jobFile, jobDir } from './storage';
 
-const jobsPath = path.join(process.cwd(), 'storage', 'jobs.json');
-
-const readJobs = async (): Promise<JobRecord[]> => {
+const readJob = async (id: string): Promise<JobRecord | null> => {
+  const filePath = jobFile(id);
   try {
-    const raw = await fs.readFile(jobsPath, 'utf8');
+    const raw = await fs.readFile(filePath, 'utf8');
     const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : [];
+    return data && typeof data === 'object' ? (data as JobRecord) : null;
   } catch {
-    return [];
+    return null;
   }
 };
 
-const writeJobs = async (jobs: JobRecord[]) => {
-  await fs.mkdir(path.dirname(jobsPath), { recursive: true });
-  await fs.writeFile(jobsPath, JSON.stringify(jobs, null, 2));
+const writeJob = async (job: JobRecord) => {
+  const dir = jobDir(job.id);
+  await fs.mkdir(dir, { recursive: true });
+  await fs.writeFile(jobFile(job.id), JSON.stringify(job, null, 2));
 };
 
 export const createJob = async (job: JobRecord) => {
-  const jobs = await readJobs();
-  jobs.push(job);
-  await writeJobs(jobs);
+  await writeJob(job);
   return job;
 };
 
@@ -30,11 +28,9 @@ export const updateJob = async (
   id: string,
   patch: Partial<JobRecord>
 ): Promise<JobRecord | null> => {
-  const jobs = await readJobs();
-  const index = jobs.findIndex((item) => item.id === id);
-  if (index === -1) return null;
+  const current = await readJob(id);
+  if (!current) return null;
 
-  const current = jobs[index];
   const updated: JobRecord = {
     ...current,
     ...patch,
@@ -49,12 +45,10 @@ export const updateJob = async (
     updated_at: new Date().toISOString()
   };
 
-  jobs[index] = updated;
-  await writeJobs(jobs);
+  await writeJob(updated);
   return updated;
 };
 
 export const getJob = async (id: string): Promise<JobRecord | null> => {
-  const jobs = await readJobs();
-  return jobs.find((item) => item.id === id) ?? null;
+  return readJob(id);
 };
