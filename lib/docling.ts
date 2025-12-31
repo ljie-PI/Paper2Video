@@ -37,6 +37,56 @@ const sanitizeUrlMessage = (message: string) =>
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+const readPngDimensions = async (filePath: string) => {
+  const handle = await fs.open(filePath, 'r');
+  try {
+    const buffer = Buffer.alloc(24);
+    const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0);
+    if (bytesRead < buffer.length) return null;
+    if (!buffer.subarray(0, 8).equals(PNG_SIGNATURE)) return null;
+    if (buffer.toString('ascii', 12, 16) !== 'IHDR') return null;
+    return {
+      width: buffer.readUInt32BE(16),
+      height: buffer.readUInt32BE(20)
+    };
+  } finally {
+    await handle.close();
+  }
+};
+
+const appendImageSizeInfo = async (markdown: string, outputDir: string) => {
+  const pattern = /!\[image\]\((artifacts\/image_[^)]+\.png)\)/gi;
+  const matches = Array.from(markdown.matchAll(pattern));
+  if (!matches.length) return markdown;
+
+  const sizes = new Map<string, { width: number; height: number }>();
+  await Promise.all(
+    matches.map(async (match) => {
+      const relativePath = match[1];
+      if (sizes.has(relativePath)) return;
+      const absolutePath = path.join(outputDir, relativePath);
+      try {
+        const size = await readPngDimensions(absolutePath);
+        if (size) {
+          sizes.set(relativePath, size);
+        } else {
+          logger.warn(`[docling] unable to read image size for ${relativePath}`);
+        }
+      } catch (error) {
+        logger.warn(`[docling] failed to read image ${relativePath}`, error);
+      }
+    })
+  );
+
+  return markdown.replace(pattern, (fullMatch, relativePath: string) => {
+    const size = sizes.get(relativePath);
+    if (!size) return fullMatch;
+    return `![image_${size.width}_${size.height}](${relativePath})`;
+  });
+};
+
 const requestJson = async <T>(
   url: string,
   options: RequestInit,
@@ -269,13 +319,12 @@ const materializeDoclingOutput = async (
   logger.debug(
     `[docling] materialized output from ${extractDir}, output to ${outputDir}`
   );
-  return markdown;
+  return appendImageSizeInfo(markdown, outputDir);
 };
 
 export const convertPdfToMarkdown = async (pdfPath: string, jobId: string) => {
   const outputDir = outputsDir(jobId);
   await fs.mkdir(outputDir, { recursive: true });
-  const outputPath = path.join(outputDir, 'paper.md');
 
   let markdown: string;
 
@@ -290,6 +339,7 @@ export const convertPdfToMarkdown = async (pdfPath: string, jobId: string) => {
     markdown = stubMarkdown(path.basename(pdfPath));
   }
 
+  const outputPath = path.join(outputDir, 'paper.md');
   await fs.writeFile(outputPath, markdown, 'utf8');
 
   return {
