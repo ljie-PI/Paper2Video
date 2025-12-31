@@ -186,10 +186,10 @@ export default function HomePage() {
           </div>
         </header>
 
-        <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+        <section className="grid items-start gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <div className="rounded-3xl bg-white/80 p-6 shadow-card backdrop-blur">
             <div
-              className={`flex h-56 flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed transition ${
+              className={`flex h-52 flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed transition ${
                 dragActive
                   ? 'border-sky-400 bg-sky-50'
                   : 'border-slate-200 bg-white'
@@ -224,8 +224,8 @@ export default function HomePage() {
               </label>
             </div>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="mt-6 grid gap-4 md:grid-cols-[1.4fr_0.6fr]">
+              <div className="flex h-[540px] flex-col rounded-2xl border border-slate-200 bg-white p-4">
                 <p className="text-sm font-semibold text-slate-700">PDF Preview</p>
                 {pdfFile ? (
                   <div className="mt-3 flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
@@ -236,14 +236,28 @@ export default function HomePage() {
                   <p className="mt-3 text-sm text-slate-500">No file selected.</p>
                 )}
                 {previewUrl ? (
-                  <div className="mt-4 h-44 overflow-hidden rounded-xl border border-slate-200">
+                  <div className="mt-4 flex-1 overflow-hidden rounded-xl border border-slate-200">
                     <embed src={previewUrl} className="h-full w-full" />
                   </div>
                 ) : null}
               </div>
               <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                <p className="text-sm font-semibold text-slate-700">Pipeline Modes</p>
-                <div className="mt-4 flex flex-col gap-3 text-sm text-slate-600">
+                <p className="text-sm font-semibold text-slate-700">Options</p>
+                <div className="mt-4 flex flex-col gap-4 text-sm text-slate-600">
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="font-medium text-slate-700">Output language</span>
+                    <select
+                      value={outputLanguage}
+                      onChange={(event) =>
+                        setOutputLanguage(event.target.value as 'en' | 'zh')
+                      }
+                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700"
+                    >
+                      <option value="en">English</option>
+                      <option value="zh">中文</option>
+                    </select>
+                  </label>
+
                   <label className="flex items-center justify-between gap-3">
                     <span className="font-medium text-slate-700">Enable video output</span>
                     <input
@@ -253,106 +267,79 @@ export default function HomePage() {
                       onChange={(event) => setEnableVideo(event.target.checked)}
                     />
                   </label>
-                  <label className="flex items-center justify-between gap-3">
-                    <span className="font-medium text-slate-700">Voice cloning</span>
-                    <input
-                      type="checkbox"
-                      className="h-5 w-5 accent-orange-500"
-                      checked={voiceClone}
-                      onChange={(event) => setVoiceClone(event.target.checked)}
-                    />
-                  </label>
+
+                  <AnimatePresence initial={false}>
+                    {enableVideo ? (
+                      <motion.div
+                        key="tts-speed"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 6 }}
+                        transition={{ duration: 0.2 }}
+                        className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                      >
+                        <p className="text-sm font-medium text-slate-700">TTS speed</p>
+                        <div className="mt-3 flex items-center gap-3">
+                          <input
+                            type="range"
+                            min={0.7}
+                            max={1.4}
+                            step={0.1}
+                            value={ttsSpeed}
+                            onChange={(event) => setTtsSpeed(Number(event.target.value))}
+                            className="w-full accent-sky-500"
+                          />
+                          <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-600">
+                            {ttsSpeed.toFixed(1)}x
+                          </span>
+                        </div>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+
+                  {enableVideo ? (
+                    <>
+                      <label className="flex items-center justify-between gap-3">
+                        <span className="font-medium text-slate-700">Voice cloning</span>
+                        <input
+                          type="checkbox"
+                          className="h-5 w-5 accent-orange-500"
+                          checked={voiceClone}
+                          onChange={(event) => setVoiceClone(event.target.checked)}
+                        />
+                      </label>
+
+                      <AnimatePresence initial={false}>
+                        {voiceClone ? (
+                          <motion.div
+                            key="voice-sample"
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 6 }}
+                            transition={{ duration: 0.2 }}
+                            className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4"
+                          >
+                            <p className="text-sm font-medium text-slate-700">Voice sample</p>
+                            <input
+                              type="file"
+                              accept="audio/*"
+                              onChange={(event) => {
+                                const file = event.target.files?.[0] ?? null;
+                                setVoiceSample(file);
+                              }}
+                              className="mt-3 block w-full rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2 text-sm text-slate-600"
+                            />
+                            <p className="mt-2 text-xs text-slate-500">
+                              Upload a short WAV sample for voice cloning.
+                            </p>
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
+                    </>
+                  ) : null}
                 </div>
               </div>
             </div>
-
-            <AnimatePresence initial={false}>
-              {enableVideo ? (
-                <motion.div
-                  key="video-settings"
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 12 }}
-                  transition={{ duration: 0.3 }}
-                  className="mt-6 rounded-2xl border border-slate-200 bg-white p-5"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-700">Narration settings</p>
-                      <p className="text-xs text-slate-500">
-                        Drive TTS pacing and optional voice cloning.
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                        Model
-                        <select
-                          value={model}
-                          onChange={(event) => setModel(event.target.value)}
-                          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700"
-                        >
-                          <option value="qwen-max">Qwen-Max</option>
-                          <option value="qwen-plus">Qwen-Plus</option>
-                          <option value="qwen-long">Qwen-Long</option>
-                        </select>
-                      </label>
-                      <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                        Output language
-                        <select
-                          value={outputLanguage}
-                          onChange={(event) =>
-                            setOutputLanguage(event.target.value as 'en' | 'zh')
-                          }
-                          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700"
-                        >
-                          <option value="en">English</option>
-                          <option value="zh">中文</option>
-                        </select>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 grid gap-4 md:grid-cols-2">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                        TTS Speed
-                      </p>
-                      <div className="mt-3 flex items-center gap-3">
-                        <input
-                          type="range"
-                          min={0.7}
-                          max={1.4}
-                          step={0.1}
-                          value={ttsSpeed}
-                          onChange={(event) => setTtsSpeed(Number(event.target.value))}
-                          className="w-full accent-sky-500"
-                        />
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600">
-                          {ttsSpeed.toFixed(1)}x
-                        </span>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                        Voice Sample
-                      </p>
-                      <input
-                        type="file"
-                        accept="audio/*"
-                        onChange={(event) => {
-                          const file = event.target.files?.[0] ?? null;
-                          setVoiceSample(file);
-                        }}
-                        className="mt-3 block w-full rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
-                      />
-                      <p className="mt-2 text-xs text-slate-500">
-                        Upload a short WAV sample if voice cloning is enabled.
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
 
             {error ? (
               <div className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-600">
@@ -371,8 +358,8 @@ export default function HomePage() {
           </div>
 
           <div className="flex flex-col gap-6">
-            <div className="rounded-3xl bg-ink-900 p-6 text-white shadow-glow">
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-300">
+            <div className="rounded-3xl bg-white/90 p-6 text-slate-700 shadow-card backdrop-blur">
+              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
                 Live pipeline
               </p>
               <div className="mt-6 flex flex-col gap-4">
@@ -387,24 +374,22 @@ export default function HomePage() {
                     <div
                       key={stage.id}
                       className={`rounded-2xl border px-4 py-3 transition ${
-                        active
-                          ? 'border-sky-400 bg-white/10'
-                          : 'border-white/10 bg-white/5'
+                        active ? 'border-sky-300 bg-sky-50/60' : 'border-slate-200 bg-white'
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <p className="text-base font-semibold">{stage.title}</p>
                         <span
                           className={`text-xs uppercase tracking-[0.2em] ${
-                            done ? 'text-emerald-300' : 'text-slate-400'
+                            done ? 'text-emerald-500' : 'text-slate-400'
                           }`}
                         >
                           {done ? 'Ready' : 'Waiting'}
                         </span>
                       </div>
-                      <p className="mt-1 text-sm text-slate-300">{stage.detail}</p>
+                      <p className="mt-1 text-sm text-slate-500">{stage.detail}</p>
                       {showError ? (
-                        <div className="mt-3 rounded-lg bg-rose-500/20 px-3 py-2 text-xs text-rose-100">
+                        <div className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600">
                           {job.error}
                         </div>
                       ) : null}
