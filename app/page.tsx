@@ -67,7 +67,7 @@ export default function HomePage() {
   const [enableVideo, setEnableVideo] = useState(true);
   const [voiceClone, setVoiceClone] = useState(false);
   const [ttsSpeed, setTtsSpeed] = useState(1);
-  const [model, setModel] = useState('qwen-max');
+  const [model] = useState('qwen-max');
   const [outputLanguage, setOutputLanguage] = useState<'en' | 'zh'>('en');
   const [dragActive, setDragActive] = useState(false);
   const [job, setJob] = useState<JobRecord | null>(null);
@@ -155,6 +155,7 @@ export default function HomePage() {
 
   const currentStatus = job?.status ?? 'pending';
   const outputJob = job?.status === 'failed' ? outputSnapshot : job;
+  const hasVideo = Boolean(outputJob?.paths?.video);
 
   return (
     <main className="min-h-screen px-6 py-12 md:px-12">
@@ -358,11 +359,8 @@ export default function HomePage() {
           </div>
 
           <div className="flex flex-col gap-6">
-            <div className="rounded-3xl bg-white/90 p-6 text-slate-700 shadow-card backdrop-blur">
-              <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
-                Live pipeline
-              </p>
-              <div className="mt-6 flex flex-col gap-4">
+            <div className="rounded-3xl border border-slate-200/70 bg-gradient-to-br from-white/95 via-white/85 to-sky-50/60 p-6 text-slate-700 shadow-card backdrop-blur">
+              <div className="flex flex-col gap-4">
                 {stages.map((stage) => {
                   const failed = job?.status === 'failed';
                   const active = !failed && !!job?.status && stage.activeOn.includes(job.status);
@@ -381,10 +379,14 @@ export default function HomePage() {
                         <p className="text-base font-semibold">{stage.title}</p>
                         <span
                           className={`text-xs uppercase tracking-[0.2em] ${
-                            done ? 'text-emerald-500' : 'text-slate-400'
+                            active
+                              ? 'text-emerald-600'
+                              : done
+                                ? 'text-emerald-500'
+                                : 'text-slate-400'
                           }`}
                         >
-                          {done ? 'Ready' : 'Waiting'}
+                          {active ? 'Running' : done ? 'Ready' : 'Waiting'}
                         </span>
                       </div>
                       <p className="mt-1 text-sm text-slate-500">{stage.detail}</p>
@@ -428,45 +430,48 @@ export default function HomePage() {
               )}
 
               <div className="mt-5 grid gap-3">
-                <div className="flex flex-wrap gap-3">
-                  {outputJob?.paths?.pptx ? (
-                    <a
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-                      href={`/api/jobs/${outputJob.id}/files/pptx`}
-                    >
-                      Slides (.pptx)
-                    </a>
-                  ) : null}
-                  {outputJob?.paths?.srt ? (
-                    <a
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-                      href={`/api/jobs/${outputJob.id}/files/srt`}
-                    >
-                      Captions (.srt)
-                    </a>
-                  ) : null}
-                  {outputJob?.paths?.video ? (
-                    <a
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-                      href={`/api/jobs/${outputJob.id}/files/video`}
-                    >
-                      Video (.mp4)
-                    </a>
-                  ) : null}
-                </div>
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
-                  {outputJob?.paths?.video ? (
+                {hasVideo ? (
+                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
                     <video
                       controls
                       className="w-full rounded-xl border border-slate-200"
                       src={`/api/jobs/${outputJob.id}/files/video`}
                     />
-                  ) : (
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
                     <p>
                       Video rendering is prepared in the pipeline. Enable
                       Remotion rendering to generate MP4 output.
                     </p>
-                  )}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-3 gap-3">
+                  {outputJob?.paths?.pptx ? (
+                    <a
+                      className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700"
+                      href={`/api/jobs/${outputJob.id}/files/pptx`}
+                    >
+                      Slides
+                    </a>
+                  ) : null}
+                  {outputJob?.paths?.srt ? (
+                    <a
+                      className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700"
+                      href={`/api/jobs/${outputJob.id}/files/srt`}
+                    >
+                      Captions
+                    </a>
+                  ) : null}
+                  {outputJob?.paths?.video ? (
+                    <a
+                      className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700"
+                      href={`/api/jobs/${outputJob.id}/files/video`}
+                    >
+                      Video
+                    </a>
+                  ) : null}
                 </div>
               </div>
             </div>
