@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { convertPdfToMarkdown } from './docling';
-import { summarizeToSlides } from './reasoning';
+import { generateSlides } from './slides';
 import { generatePptx } from './pptx';
 import { generateSrt } from './srt';
 import { getJob, updateJob } from './job-store';
@@ -76,7 +76,7 @@ const runPipeline = async (jobId: string) => {
 
   await updateJob(jobId, { status: 'generating' });
   const slides = await runStage('understanding', async () => {
-    return summarizeToSlides(markdown, job.config);
+    return generateSlides(markdown, job.config);
   });
   const slidesPath = await runStage('understanding', async () => {
     return writeSlidesJson(jobId, slides);
