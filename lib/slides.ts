@@ -82,9 +82,19 @@ const requestSlidesFromLlm = async (
   }
 
   try {
+    const languageHint =
+      config.outputLanguage === 'zh'
+        ? 'Output language: Chinese.'
+        : config.outputLanguage === 'en'
+          ? 'Output language: English.'
+          : '';
+    const effectiveSystemPrompt = languageHint
+      ? `${systemPrompt}\n\n${languageHint}`
+      : systemPrompt;
+
     const responseText = await requestLlmText({
       model: config.model?.trim() ?? null,
-      systemPrompt,
+      systemPrompt: effectiveSystemPrompt,
       userPrompt: markdown
     });
     if (!responseText) return null;
@@ -127,10 +137,13 @@ export const generateSlides = async (
 
   const headings = takeHeadings(markdown);
   const bullets = splitIntoBullets(markdown);
+  const useChinese = config.outputLanguage === 'zh';
 
   const slides = (headings.length
     ? headings
-    : ['Overview', 'Method', 'Results', 'Conclusion']
+    : useChinese
+      ? ['概述', '方法', '结果', '结论']
+      : ['Overview', 'Method', 'Results', 'Conclusion']
   )
     .slice(0, 6)
     .map((title, index) => ({
@@ -138,14 +151,20 @@ export const generateSlides = async (
       title,
       bullets: bullets.length
         ? bullets
-        : ['Key insight one', 'Key insight two', 'Key insight three'],
-      speakerNotes: `Narrate the key points for ${title.toLowerCase()} in 30-45 seconds.`,
-      visualPrompt: `Minimalist illustration for ${title.toLowerCase()} in a scientific keynote style.`,
+        : useChinese
+          ? ['关键结论一', '关键结论二', '关键结论三']
+          : ['Key insight one', 'Key insight two', 'Key insight three'],
+      speakerNotes: useChinese
+        ? `用 30-45 秒讲述 ${title} 的要点。`
+        : `Narrate the key points for ${title.toLowerCase()} in 30-45 seconds.`,
+      visualPrompt: useChinese
+        ? `科学主题的极简插画，主题为 ${title}。`
+        : `Minimalist illustration for ${title.toLowerCase()} in a scientific keynote style.`,
       durationSec: 14 + index * 2
     }));
 
   return {
-    title: 'Paper Summary',
+    title: useChinese ? '论文摘要' : 'Paper Summary',
     slides
   };
 };

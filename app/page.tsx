@@ -68,6 +68,7 @@ export default function HomePage() {
   const [voiceClone, setVoiceClone] = useState(false);
   const [ttsSpeed, setTtsSpeed] = useState(1);
   const [model, setModel] = useState('qwen-max');
+  const [outputLanguage, setOutputLanguage] = useState<'en' | 'zh'>('en');
   const [dragActive, setDragActive] = useState(false);
   const [job, setJob] = useState<JobRecord | null>(null);
   const [outputSnapshot, setOutputSnapshot] = useState<JobRecord | null>(null);
@@ -132,6 +133,7 @@ export default function HomePage() {
     formData.append('voiceClone', String(voiceClone));
     formData.append('ttsSpeed', String(ttsSpeed));
     formData.append('model', model);
+    formData.append('outputLanguage', outputLanguage);
     if (voiceSample) formData.append('voiceSample', voiceSample);
 
     const response = await fetch('/api/jobs', {
@@ -274,22 +276,40 @@ export default function HomePage() {
                   transition={{ duration: 0.3 }}
                   className="mt-6 rounded-2xl border border-slate-200 bg-white p-5"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-slate-700">Narration settings</p>
                       <p className="text-xs text-slate-500">
                         Drive TTS pacing and optional voice cloning.
                       </p>
                     </div>
-                    <select
-                      value={model}
-                      onChange={(event) => setModel(event.target.value)}
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm"
-                    >
-                      <option value="qwen-max">Qwen-Max</option>
-                      <option value="qwen-plus">Qwen-Plus</option>
-                      <option value="qwen-long">Qwen-Long</option>
-                    </select>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                        Model
+                        <select
+                          value={model}
+                          onChange={(event) => setModel(event.target.value)}
+                          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700"
+                        >
+                          <option value="qwen-max">Qwen-Max</option>
+                          <option value="qwen-plus">Qwen-Plus</option>
+                          <option value="qwen-long">Qwen-Long</option>
+                        </select>
+                      </label>
+                      <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                        Output language
+                        <select
+                          value={outputLanguage}
+                          onChange={(event) =>
+                            setOutputLanguage(event.target.value as 'en' | 'zh')
+                          }
+                          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700"
+                        >
+                          <option value="en">English</option>
+                          <option value="zh">中文</option>
+                        </select>
+                      </label>
+                    </div>
                   </div>
 
                   <div className="mt-5 grid gap-4 md:grid-cols-2">

@@ -35,12 +35,17 @@ export async function POST(request: Request) {
     voiceSamplePath = toRelativePath(voicePath);
   }
 
+  const rawLanguage = formData.get('outputLanguage');
+  const outputLanguage =
+    rawLanguage === 'zh' || rawLanguage === 'en' ? rawLanguage : undefined;
+
   const config: JobConfig = {
     model: String(formData.get('model') ?? 'qwen-max'),
     enableVideo: parseBoolean(formData.get('enableVideo')),
     voiceClone: parseBoolean(formData.get('voiceClone')),
     ttsSpeed: Number(formData.get('ttsSpeed') ?? 1),
-    voiceId: formData.get('voiceId') ? String(formData.get('voiceId')) : null
+    voiceId: formData.get('voiceId') ? String(formData.get('voiceId')) : null,
+    outputLanguage
   };
 
   const now = new Date().toISOString();

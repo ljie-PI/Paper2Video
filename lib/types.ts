@@ -12,6 +12,7 @@ export type JobConfig = {
   voiceClone: boolean;
   ttsSpeed: number;
   voiceId?: string | null;
+  outputLanguage?: 'zh' | 'en';
 };
 
 export type Slide = {
