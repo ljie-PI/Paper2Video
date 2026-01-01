@@ -1,0 +1,87 @@
+/* Layout-specific styles for different slide layouts */
+
+.layout-text-focus .body {
+  column-gap: 64px;
+  column-count: 2;
+}
+
+.layout-image-right .columns {
+  display: flex;
+  gap: 64px;
+  align-items: flex-start;
+}
+
+.layout-image-left .columns,
+.layout-two-columns .columns,
+.layout-table-and-figure .columns {
+  display: flex;
+  gap: 64px;
+  align-items: flex-start;
+}
+
+.layout-image-right .col.text {
+  flex: 1 1 40%;
+}
+
+.layout-image-right .col.media {
+  flex: 1 1 60%;
+}
+
+.layout-image-left .col.text {
+  flex: 1 1 40%;
+}
+
+.layout-image-left .col.media {
+  flex: 1 1 60%;
+}
+
+.layout-two-columns .col {
+  flex: 1 1 50%;
+}
+
+.layout-table-and-figure .col.table {
+  flex: 1 1 55%;
+}
+
+.layout-table-and-figure .col.figure {
+  flex: 1 1 45%;
+}
+
+.layout-image-right .col,
+.layout-image-left .col,
+.layout-two-columns .col,
+.layout-table-and-figure .col {
+  padding: 0 24px;
+}
+
+.layout-image-right img,
+.layout-image-left img {
+  width: 1152px;
+  height: auto;
+  display: block;
+}
+
+.layout-image-bottom img {
+  width: auto;
+  height: 500px;
+  display: block;
+  margin: 0 auto;
+}
+
+.layout-image-bottom .body {
+  margin-bottom: 36px;
+}
+
+.layout-table-focus .table {
+  margin-top: 32px;
+}
+
+.layout-table-focus .note {
+  margin-top: 24px;
+  font-size: 40px;
+}
+
+.layout-table-and-figure .note {
+  margin-top: 24px;
+  font-size: 40px;
+}

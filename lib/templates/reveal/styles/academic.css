@@ -44,77 +44,7 @@
   color: #475569;
 }
 
-.layout-text-focus .body {
-  column-gap: 64px;
-  column-count: 2;
-}
-
-.layout-image-right .columns {
-  display: flex;
-  gap: 64px;
-  align-items: flex-start;
-}
-
-.layout-image-left .columns,
-.layout-two-columns .columns,
-.layout-table-and-figure .columns {
-  display: flex;
-  gap: 64px;
-  align-items: flex-start;
-}
-
-.layout-image-right .col.text {
-  flex: 1 1 55%;
-}
-
-.layout-image-right .col.media {
-  flex: 1 1 45%;
-}
-
-.layout-image-left .col.text {
-  flex: 1 1 55%;
-}
-
-.layout-image-left .col.media {
-  flex: 1 1 45%;
-}
-
-.layout-two-columns .col {
-  flex: 1 1 50%;
-}
-
-.layout-table-and-figure .col.table {
-  flex: 1 1 55%;
-}
-
-.layout-table-and-figure .col.figure {
-  flex: 1 1 45%;
-}
-
-.layout-image-right img,
-.layout-image-left img,
-.layout-image-bottom img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-
-.layout-image-bottom .body {
-  margin-bottom: 36px;
-}
-
-.layout-table-focus .table {
-  margin-top: 32px;
-}
-
-.layout-table-focus .note {
-  margin-top: 24px;
-  font-size: 40px;
-  color: #475569;
-}
-
+.layout-table-focus .note,
 .layout-table-and-figure .note {
-  margin-top: 24px;
-  font-size: 40px;
   color: #475569;
 }
