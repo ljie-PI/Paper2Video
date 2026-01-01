@@ -30,10 +30,10 @@ type RenderedSlidesResult = {
   pdfPath: string;
 };
 
-const resolveImageSrc = (image: SlideImage) => {
+const resolveImageSrc = (image: SlideImage, baseDir: string) => {
   const absolutePath = path.isAbsolute(image.path)
     ? image.path
-    : path.join(process.cwd(), image.path);
+    : path.join(baseDir, image.path);
   return {
     src: pathToFileURL(absolutePath).toString(),
     width: image.width,
@@ -77,12 +77,16 @@ const ensureSharedRevealDist = async () => {
   }
 };
 
-const buildUserPrompt = (slide: Slide, images: SlideImage[]) => {
+const buildUserPrompt = (
+  slide: Slide,
+  images: SlideImage[],
+  baseDir: string
+) => {
   const payload = {
     title: slide.title,
     text_contents: slide.text_contents,
     tables: slide.tables,
-    images: images.map(resolveImageSrc),
+    images: images.map((image) => resolveImageSrc(image, baseDir)),
     canvas: { width: SLIDE_WIDTH, height: SLIDE_HEIGHT }
   };
   return `Slide data (JSON):\n${JSON.stringify(payload, null, 2)}`;
@@ -142,9 +146,10 @@ const renderLayoutTemplate = async (
 const generateSlideHtml = async (
   slide: Slide,
   config: JobConfig,
-  promptTemplate: string
+  promptTemplate: string,
+  baseDir: string
 ): Promise<{ html: string; layout: string }> => {
-  const userPrompt = buildUserPrompt(slide, slide.images ?? []);
+  const userPrompt = buildUserPrompt(slide, slide.images ?? [], baseDir);
   const responseText = await requestLlmText({
     model: config.model?.trim() ?? null,
     systemPrompt: promptTemplate,
@@ -163,6 +168,7 @@ const generateSlideHtml = async (
 
   const layout =
     typeof parsed.layout === 'string' ? parsed.layout.toLowerCase().trim() : '';
+  logger.debug(`[render-slides] selected layout: ${layout}`);
   const schema = layout ? LAYOUT_SCHEMAS[layout] : null;
   if (!schema) {
     throw new Error(
@@ -331,7 +337,12 @@ export const renderSlides = async (
     async (slide, index) => {
       logger.info(`[render-slides] rendering slide ${index + 1}`);
       const start = Date.now();
-      const selection = await generateSlideHtml(slide, config, promptTemplate);
+      const selection = await generateSlideHtml(
+        slide,
+        config,
+        promptTemplate,
+        outputDir
+      );
       logger.debug(
         `[render-slides] generateSlideHtml ${index + 1} took ${Date.now() - start}ms`
       );
