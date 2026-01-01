@@ -304,14 +304,18 @@ export const renderSlides = async (
 
   const renderConcurrency = Math.max(
     1,
-    Number.parseInt(process.env.RENDER_SLIDES_CONCURRENCY ?? '3', 10) || 3
+    Number.parseInt(process.env.RENDER_SLIDES_CONCURRENCY ?? '1', 10) || 1
   );
   const results = await runWithConcurrency(
     slides.slides,
     renderConcurrency,
     async (slide, index) => {
       logger.info(`[render-slides] rendering slide ${index + 1}`);
+      const start = Date.now();
       const selection = await generateSlideHtml(slide, config, promptTemplate);
+      logger.debug(
+        `[render-slides] generateSlideHtml ${index + 1} took ${Date.now() - start}ms`
+      );
       const baseName = `slide-${String(index + 1).padStart(3, '0')}`;
       const htmlPath = path.join(renderDir, `${baseName}.html`);
       await fs.writeFile(htmlPath, selection.html, 'utf8');

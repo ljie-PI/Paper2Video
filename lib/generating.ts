@@ -107,11 +107,13 @@ const requestSlidesFromLlm = async (
       : '';
     const systemPrompt = renderTemplate(promptTemplate, { languageHint });
 
+    logger.debug(`[generating] requesting LLM with userPrompt ${markdown.slice(0, 1024)}...`);
     const responseText = await requestLlmText({
       model: config.model?.trim() ?? null,
       systemPrompt,
       userPrompt: markdown
     });
+    logger.debug('[generating] LLM response:', responseText);
 
     if (!responseText) return null;
 
@@ -128,12 +130,17 @@ export const generateSlides = async (
   markdown: string,
   config: JobConfig
 ): Promise<SlidesJSON> => {
-  const llmSlides = await requestSlidesFromLlm(markdown, config);
-  if (llmSlides) {
-    return llmSlides;
-  }
+  const start = Date.now();
+  try {
+    const llmSlides = await requestSlidesFromLlm(markdown, config);
+    if (llmSlides) {
+      return llmSlides;
+    }
 
-  throw new Error('Failed to generate slides from LLM response.');
+    throw new Error('Failed to generate slides from LLM response.');
+  } finally {
+    logger.debug(`[generating] generateSlides took ${Date.now() - start}ms`);
+  }
 };
 
 export const writeSlidesJson = async (jobId: string, slides: SlidesJSON) => {
