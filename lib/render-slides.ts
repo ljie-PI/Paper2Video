@@ -1,0 +1,370 @@
+import fs from 'fs/promises';
+import path from 'path';
+import { pathToFileURL } from 'node:url';
+import puppeteer from 'puppeteer';
+import type { JobConfig, Slide, SlideImage, SlidesJSON } from './types';
+import { getPrompt } from './prompts';
+import { logger } from './logger';
+import { requestLlmText } from './llm';
+import { outputsDir, toRelativePath } from './storage';
+import {
+  DEFAULT_STYLE,
+  LAYOUT_SCHEMAS,
+  REVEAL_DIST,
+  SLIDE_HEIGHT,
+  SLIDE_WIDTH,
+  STYLES_DIR,
+  TEMPLATE_PATH
+} from '@/constants/render-slides';
+
+type RenderedSlide = {
+  index: number;
+  title: string;
+  htmlPath: string;
+  layout: string;
+};
+
+type RenderedSlidesResult = {
+  manifestPath: string;
+  pdfPath: string;
+};
+
+const resolveImageSrc = (image: SlideImage) => {
+  const absolutePath = path.isAbsolute(image.path)
+    ? image.path
+    : path.join(process.cwd(), image.path);
+  return {
+    src: pathToFileURL(absolutePath).toString(),
+    width: image.width,
+    height: image.height
+  };
+};
+
+const stripCodeFence = (text: string) => {
+  const fenced = text.match(/```(?:html)?\s*([\s\S]*?)```/i);
+  if (fenced?.[1]) return fenced[1].trim();
+  return text.trim();
+};
+
+const sanitizeHtml = (text: string) => {
+  const stripped = stripCodeFence(text);
+  return stripped.replace(/<\/?(html|body)[^>]*>/gi, '').trim();
+};
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+
+const buildUserPrompt = (slide: Slide, images: SlideImage[]) => {
+  const payload = {
+    title: slide.title,
+    text_contents: slide.text_contents,
+    tables: slide.tables,
+    images: images.map(resolveImageSrc),
+    canvas: { width: SLIDE_WIDTH, height: SLIDE_HEIGHT }
+  };
+  return `Slide data (JSON):\n${JSON.stringify(payload, null, 2)}`;
+};
+
+const extractJson = (text: string) => {
+  const trimmed = text.trim();
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    return trimmed;
+  }
+  const start = trimmed.indexOf('{');
+  const end = trimmed.lastIndexOf('}');
+  if (start !== -1 && end !== -1 && end > start) {
+    return trimmed.slice(start, end + 1);
+  }
+  return trimmed;
+};
+
+const resolvePath = (data: Record<string, unknown>, key: string) => {
+  const parts = key.split('.');
+  let current: unknown = data;
+
+  for (const part of parts) {
+    if (current && typeof current === 'object' && part in current) {
+      current = (current as Record<string, unknown>)[part];
+    } else {
+      return undefined;
+    }
+  }
+
+  return current;
+};
+
+const renderLayoutTemplate = async (
+  layoutId: string,
+  slots: Record<string, unknown>
+) => {
+  const schema = LAYOUT_SCHEMAS[layoutId];
+  if (!schema) {
+    throw new Error(`Unknown layout template "${layoutId}".`);
+  }
+  const templatePath = path.join(
+    process.cwd(),
+    'lib',
+    'templates',
+    'reveal',
+    'layouts',
+    schema.templateFile
+  );
+  const template = await fs.readFile(templatePath, 'utf8');
+  return template.replace(/{{\s*([a-zA-Z0-9_.-]+)\s*}}/g, (_, key) => {
+    const value = resolvePath(slots, key);
+    return value === undefined || value === null ? '' : String(value);
+  });
+};
+
+const generateSlideHtml = async (
+  slide: Slide,
+  config: JobConfig,
+  promptTemplate: string
+): Promise<{ html: string; layout: string }> => {
+  const userPrompt = buildUserPrompt(slide, slide.images ?? []);
+  const responseText = await requestLlmText({
+    model: config.model?.trim() ?? null,
+    systemPrompt: promptTemplate,
+    userPrompt
+  });
+
+  if (!responseText) {
+    throw new Error('LLM returned empty HTML for slide layout.');
+  }
+
+  const json = extractJson(responseText);
+  const parsed = JSON.parse(json) as {
+    layout?: unknown;
+    slots?: unknown;
+  };
+
+  const layout =
+    typeof parsed.layout === 'string' ? parsed.layout.toLowerCase().trim() : '';
+  const schema = layout ? LAYOUT_SCHEMAS[layout] : null;
+  if (!schema) {
+    throw new Error(
+      `Missing or unknown layout template "${layout || 'unknown'}".`
+    );
+  }
+
+  const rawSlots =
+    parsed.slots && typeof parsed.slots === 'object'
+      ? (parsed.slots as Record<string, unknown>)
+      : {};
+  const slots: Record<string, unknown> = {};
+  for (const slot of schema.slots) {
+    const rawValue = rawSlots[slot.name];
+    if (slot.kind === 'image') {
+      if (!rawValue || typeof rawValue !== 'object') {
+        if (slot.required) {
+          throw new Error(
+            `Layout "${schema.id}" requires slot "${slot.name}".`
+          );
+        }
+        slots[slot.name] = null;
+        continue;
+      }
+      const rawImage = rawValue as {
+        url?: unknown;
+        width?: unknown;
+        height?: unknown;
+        caption?: unknown;
+      };
+      const url = typeof rawImage.url === 'string' ? rawImage.url.trim() : '';
+      const width = Number(rawImage.width);
+      const height = Number(rawImage.height);
+      const caption =
+        typeof rawImage.caption === 'string' ? rawImage.caption.trim() : '';
+      if (!url || !Number.isFinite(width) || !Number.isFinite(height)) {
+        throw new Error(
+          `Layout "${schema.id}" requires image slot "${slot.name}" with url, width, height.`
+        );
+      }
+      slots[slot.name] = {
+        url: url,
+        width: Math.round(width),
+        height: Math.round(height),
+        caption: caption ? escapeHtml(caption) : ''
+      };
+      continue;
+    }
+
+    const value =
+      rawValue === undefined || rawValue === null
+        ? ''
+        : typeof rawValue === 'string'
+          ? rawValue
+          : String(rawValue);
+
+    if (slot.required && !value.trim()) {
+      throw new Error(
+        `Layout "${schema.id}" requires slot "${slot.name}".`
+      );
+    }
+
+    slots[slot.name] =
+      slot.kind === 'text' ? escapeHtml(value.trim()) : sanitizeHtml(value);
+  }
+
+  const html = await renderLayoutTemplate(schema.id, slots);
+  return { html, layout: schema.id };
+};
+
+const buildDeckHtml = async (sections: string[], styleName: string) => {
+  const template = await fs.readFile(TEMPLATE_PATH, 'utf8');
+  return template
+    .replace(/{{revealCss}}/g, './reveal/dist/reveal.css')
+    .replace(/{{revealThemeCss}}/g, './reveal/dist/theme/white.css')
+    .replace(/{{revealPdfCss}}/g, './reveal/dist/print/pdf.css')
+    .replace(/{{revealJs}}/g, './reveal/dist/reveal.js')
+    .replace(/{{styleCss}}/g, `./styles/${styleName}.css`)
+    .replace(/{{width}}/g, String(SLIDE_WIDTH))
+    .replace(/{{height}}/g, String(SLIDE_HEIGHT))
+    .replace(/{{sections}}/g, sections.join('\n'));
+};
+
+const renderDeckToPdf = async (deckPath: string, outputPath: string) => {
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
+  const page = await browser.newPage();
+  await page.setViewport({ width: SLIDE_WIDTH, height: SLIDE_HEIGHT });
+  const url = `${pathToFileURL(deckPath).toString()}?print-pdf`;
+  await page.goto(url, { waitUntil: 'networkidle0' });
+  await page.waitForFunction(
+    () => (window as typeof window & { Reveal?: { isReady: () => boolean } }).Reveal?.isReady?.()
+  );
+  await page.emulateMediaType('screen');
+  await page.pdf({
+    path: outputPath,
+    printBackground: true,
+    width: `${SLIDE_WIDTH}px`,
+    height: `${SLIDE_HEIGHT}px`
+  });
+  await browser.close();
+};
+
+const runWithConcurrency = async <T, R>(
+  items: T[],
+  limit: number,
+  worker: (item: T, index: number) => Promise<R>
+) => {
+  const results = new Array<R>(items.length);
+  let nextIndex = 0;
+
+  const runWorker = async () => {
+    while (nextIndex < items.length) {
+      const current = nextIndex;
+      nextIndex += 1;
+      results[current] = await worker(items[current], current);
+    }
+  };
+
+  const workers = Array.from({ length: Math.min(limit, items.length) }, () =>
+    runWorker()
+  );
+  await Promise.all(workers);
+  return results;
+};
+
+export const renderSlides = async (
+  slides: SlidesJSON,
+  jobId: string,
+  config: JobConfig
+): Promise<RenderedSlidesResult> => {
+  const outputDir = outputsDir(jobId);
+  const renderDir = path.join(outputDir, 'rendered-slides');
+  await fs.mkdir(renderDir, { recursive: true });
+
+  const promptTemplate = getPrompt('render-slide.md');
+  if (!promptTemplate) {
+    throw new Error('Missing prompt render-slide.md.');
+  }
+
+  try {
+    await fs.access(TEMPLATE_PATH);
+  } catch {
+    throw new Error('Missing Reveal.js deck template.');
+  }
+
+  try {
+    await fs.access(REVEAL_DIST);
+  } catch {
+    throw new Error('Reveal.js not installed. Run bun install.');
+  }
+
+  await fs.mkdir(path.join(renderDir, 'reveal', 'dist'), { recursive: true });
+  await fs.cp(REVEAL_DIST, path.join(renderDir, 'reveal', 'dist'), {
+    recursive: true
+  });
+
+  const renderConcurrency = Math.max(
+    1,
+    Number.parseInt(process.env.RENDER_SLIDES_CONCURRENCY ?? '3', 10) || 3
+  );
+  const results = await runWithConcurrency(
+    slides.slides,
+    renderConcurrency,
+    async (slide, index) => {
+      logger.info(`[render-slides] rendering slide ${index + 1}`);
+      const selection = await generateSlideHtml(slide, config, promptTemplate);
+      const baseName = `slide-${String(index + 1).padStart(3, '0')}`;
+      const htmlPath = path.join(renderDir, `${baseName}.html`);
+      await fs.writeFile(htmlPath, selection.html, 'utf8');
+      return {
+        sectionHtml: selection.html,
+        rendered: {
+          index,
+          title: slide.title,
+          htmlPath: toRelativePath(htmlPath),
+          layout: selection.layout
+        }
+      };
+    }
+  );
+
+  const rendered: RenderedSlide[] = results.map((result) => result.rendered);
+  const sections = results.map((result) => result.sectionHtml);
+  const styleName = DEFAULT_STYLE;
+  const stylePath = path.join(STYLES_DIR, `${styleName}.css`);
+  try {
+    await fs.access(stylePath);
+  } catch {
+    throw new Error(`Unknown slide style "${styleName}".`);
+  }
+
+  await fs.mkdir(path.join(renderDir, 'styles'), { recursive: true });
+  await fs.copyFile(stylePath, path.join(renderDir, 'styles', `${styleName}.css`));
+
+  const deckPath = path.join(renderDir, 'slides.html');
+  await fs.writeFile(deckPath, await buildDeckHtml(sections, styleName), 'utf8');
+
+  const manifestPath = path.join(renderDir, 'rendered-slides.json');
+  await fs.writeFile(
+    manifestPath,
+    JSON.stringify(
+      {
+        slides: rendered,
+        deck: toRelativePath(deckPath),
+        style: styleName,
+        layouts: Object.keys(LAYOUT_SCHEMAS)
+      },
+      null,
+      2
+    )
+  );
+  logger.debug(`[render-slides] wrote manifest at ${manifestPath}`);
+
+  const pdfPath = path.join(outputDir, 'slides.pdf');
+  await renderDeckToPdf(deckPath, pdfPath);
+  logger.debug(`[render-slides] rendered PDF at ${pdfPath}`);
+
+  return {
+    manifestPath: toRelativePath(manifestPath),
+    pdfPath: toRelativePath(pdfPath)
+  };
+};

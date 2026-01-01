@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{{revealCss}}" />
+    <link rel="stylesheet" href="{{revealThemeCss}}" />
+    <link rel="stylesheet" href="{{revealPdfCss}}" media="print" />
+    <link rel="stylesheet" href="{{styleCss}}" />
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        {{sections}}
+      </div>
+    </div>
+    <script src="{{revealJs}}"></script>
+    <script>
+      Reveal.initialize({
+        width: {{width}},
+        height: {{height}},
+        margin: 0.06,
+        controls: false,
+        progress: false,
+        center: false,
+        hash: false,
+        transition: 'none'
+      });
+    </script>
+  </body>
+</html>

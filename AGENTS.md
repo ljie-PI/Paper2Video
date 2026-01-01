@@ -2,8 +2,8 @@
 
 ## Project Structure & Module Organization
 - `app/`: Next.js App Router pages and API routes (`app/page.tsx`, `app/api/**`).
-- `lib/`: pipeline logic and helpers (Docling stub, generating, PPTX/SRT, job store).
-- `remotion/`: Remotion compositions used for video rendering.
+- `constants/`: shared constants and configuration values.
+- `lib/`: pipeline logic and helpers (Docling stub, generating, rendering, job store).
 - `storage/`: local runtime artifacts (`uploads/`, `outputs/`, `jobs.json`), ignored by git.
 - `public/`: static assets (currently empty).
 
@@ -12,11 +12,9 @@
 - `bun run build`: production build.
 - `bun run start`: run the production server after build.
 - `bun run lint`: run ESLint (Next core web vitals + TypeScript rules).
-- `bun run remotion:preview`: preview Remotion compositions.
-- `bun run remotion:render`: render a Remotion video.
 
 ## Coding Style & Naming Conventions
-- TypeScript-first; keep files in `app/`, `lib/`, `remotion/`.
+- TypeScript-first; keep files in `app/` and `lib/`.
 - Indentation: 2 spaces; prefer single quotes in TS/JS.
 - API routes live under `app/api/<route>/route.ts`.
 - UI uses Tailwind classes in `app/page.tsx` and global styles in `app/globals.css`.
@@ -35,5 +33,5 @@
 - External services are optional; configure via `.env`/`.env.local` (see `.env.example`):
   - `DOCLING_URL` for PDF parsing.
   - `QWEN_API_KEY` for LLM summarization (stubbed today).
-  - `REMOTION_RENDER_ENABLED` to enable MP4 generation in the pipeline.
+  - `VIDEO_RENDER_ENABLED` to enable MP4 generation in the pipeline.
 - Uploaded PDFs and generated outputs are stored under `storage/` on the local filesystem.

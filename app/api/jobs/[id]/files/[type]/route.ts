@@ -10,8 +10,13 @@ const contentTypes: Record<string, string> = {
   doc: 'text/markdown',
   slides: 'application/json',
   pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  video: 'video/mp4',
-  srt: 'application/x-subrip'
+  rendered: 'application/json',
+  slidesPdf: 'application/pdf',
+  video: 'video/mp4'
+};
+
+const downloadNames: Record<string, string> = {
+  slidesPdf: 'slides.pdf'
 };
 
 export async function GET(
@@ -34,10 +39,11 @@ export async function GET(
 
   try {
     const data = await fs.readFile(absolutePath);
+    const fileName = downloadNames[params.type] ?? params.type;
     return new NextResponse(data, {
       headers: {
         'Content-Type': contentTypes[params.type] ?? 'application/octet-stream',
-        'Content-Disposition': `attachment; filename="${params.type}"`
+        'Content-Disposition': `attachment; filename="${fileName}"`
       }
     });
   } catch {

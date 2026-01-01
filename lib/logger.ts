@@ -1,12 +1,6 @@
-type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'SILENT';
+import { LOG_LEVELS } from '@/constants/logger';
 
-const LOG_LEVELS: Record<LogLevel, number> = {
-  DEBUG: 10,
-  INFO: 20,
-  WARN: 30,
-  ERROR: 40,
-  SILENT: 50
-};
+type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'SILENT';
 
 const resolveLogLevel = (): LogLevel => {
   const raw = process.env.LOG_LEVEL?.toUpperCase();
@@ -15,9 +9,8 @@ const resolveLogLevel = (): LogLevel => {
   return 'INFO';
 };
 
-const currentLevel = LOG_LEVELS[resolveLogLevel()];
-
-const shouldLog = (level: LogLevel) => LOG_LEVELS[level] >= currentLevel;
+const shouldLog = (level: LogLevel) =>
+  LOG_LEVELS[level] >= LOG_LEVELS[resolveLogLevel()];
 
 const logWithLevel = (level: LogLevel, args: unknown[]) => {
   if (!shouldLog(level)) return;

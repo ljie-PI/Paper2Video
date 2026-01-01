@@ -4,10 +4,12 @@ import extract from 'extract-zip';
 import { outputsDir, toRelativePath } from './storage';
 import { logger } from './logger';
 import { getPrompt, renderTemplate } from './prompts';
-
-const DOC_REQUEST_TIMEOUT_MS = 30000;
-const DOC_POLL_INTERVAL_MS = 1000;
-const DOC_POLL_TIMEOUT_MS = 10 * 60 * 1000;
+import {
+  DOC_POLL_INTERVAL_MS,
+  DOC_POLL_TIMEOUT_MS,
+  DOC_REQUEST_TIMEOUT_MS,
+  PNG_SIGNATURE
+} from '@/constants/docling';
 
 const stubTemplate = () => {
   const template = getPrompt('docling-stub.md');
@@ -36,8 +38,6 @@ const sanitizeUrlMessage = (message: string) =>
   message.replace(/https?:\/\/[^\s)]+/g, (match) => urlToPath(match));
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 const readPngDimensions = async (filePath: string) => {
   const handle = await fs.open(filePath, 'r');

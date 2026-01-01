@@ -1,10 +1,10 @@
-export type LlmProvider = 'openai' | 'openai-compatible' | 'anthropic' | 'gemini';
-
-const LLM_MAX_TOKENS = Number.parseInt(
+export const LLM_MAX_TOKENS = Number.parseInt(
   process.env.LLM_MAX_TOKENS ?? '4096',
   10
 );
-const LLM_TEMPERATURE = 0.2;
+export const LLM_TEMPERATURE = 0.2;
+
+export type LlmProvider = 'openai' | 'openai-compatible' | 'anthropic' | 'gemini';
 
 const normalizeProvider = (value?: string | null): LlmProvider | null => {
   if (!value) return null;

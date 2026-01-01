@@ -38,9 +38,10 @@ export type JobPaths = {
   voiceSample?: string;
   doc?: string;
   slides?: string;
+  rendered?: string;
+  slidesPdf?: string;
   pptx?: string;
   video?: string;
-  srt?: string;
 };
 
 export type JobRecord = {

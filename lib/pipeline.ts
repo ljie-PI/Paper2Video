@@ -2,13 +2,14 @@ import fs from 'fs/promises';
 import path from 'path';
 import { convertPdfToMarkdown } from './docling';
 import { generateSlides, writeSlidesJson } from './generating';
-import { generatePptx } from './pptx';
-import { generateSrt } from './srt';
+import { renderSlides } from './render-slides';
 import { getJob, updateJob } from './job-store';
 import { outputsDir, toRelativePath } from './storage';
 
 const ensurePlaceholderVideo = async (jobId: string) => {
-  if (!process.env.REMOTION_RENDER_ENABLED) return undefined;
+  const enabled =
+    process.env.VIDEO_RENDER_ENABLED ?? process.env.REMOTION_RENDER_ENABLED;
+  if (!enabled) return undefined;
   const outputDir = outputsDir(jobId);
   await fs.mkdir(outputDir, { recursive: true });
   const filePath = path.join(outputDir, 'final_video.mp4');
@@ -79,16 +80,16 @@ const runPipeline = async (jobId: string) => {
   });
 
   await updateJob(jobId, { status: 'rendering' });
-  const pptxPath = await runStage('composing', async () => {
-    return generatePptx(slides, jobId);
+  const renderedSlides = await runStage('composing', async () => {
+    return renderSlides(slides, jobId, job.config);
   });
   await updateJob(jobId, {
-    paths: { pptx: pptxPath }
+    paths: {
+      rendered: renderedSlides.manifestPath,
+      slidesPdf: renderedSlides.pdfPath
+    }
   });
 
-  const srtPath = await runStage('rendering', async () => {
-    return generateSrt(slides, jobId);
-  });
   const videoPath = await runStage('rendering', async () => {
     return ensurePlaceholderVideo(jobId);
   });
@@ -96,7 +97,6 @@ const runPipeline = async (jobId: string) => {
   await updateJob(jobId, {
     status: 'completed',
     paths: {
-      srt: srtPath,
       video: videoPath
     }
   });

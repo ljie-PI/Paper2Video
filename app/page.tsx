@@ -26,28 +26,28 @@ const stages: Array<{
   {
     id: 'parsing',
     title: 'Parsing',
-    detail: 'PDF → structured Markdown',
+    detail: 'PDF -> structured Markdown',
     activeOn: ['parsing'],
     doneOn: ['generating', 'rendering', 'completed']
   },
   {
     id: 'generating',
     title: 'Generating',
-    detail: 'Markdown → slides JSON',
+    detail: 'Markdown -> slides JSON',
     activeOn: ['generating'],
     doneOn: ['rendering', 'completed']
   },
   {
     id: 'composing',
-    title: 'Generating Slides',
-    detail: 'PptxGenJS layout',
+    title: 'Rendering Slides',
+    detail: 'LLM layout -> HTML -> PDF',
     activeOn: ['rendering'],
     doneOn: ['completed']
   },
   {
     id: 'rendering',
     title: 'Generating Video',
-    detail: 'Remotion sequences + captions',
+    detail: 'Video processing',
     activeOn: ['rendering'],
     doneOn: ['completed']
   }
@@ -403,7 +403,7 @@ export default function HomePage() {
                 <div>
                   <p className="text-sm font-semibold text-slate-700">Outputs</p>
                   <p className="text-xs text-slate-500">
-                    Slides JSON, PPTX, and video artifacts.
+                    Slides JSON, slides PDF, and video artifacts.
                   </p>
                 </div>
               </div>
@@ -435,20 +435,12 @@ export default function HomePage() {
                     : 'Video output is disabled or not yet rendered.'}
                 </div>
                 <div className="grid grid-cols-3 gap-3">
-                  {outputJob?.paths?.pptx ? (
+                  {outputJob?.paths?.slidesPdf ? (
                     <a
                       className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700"
-                      href={`/api/jobs/${outputJob.id}/files/pptx`}
+                      href={`/api/jobs/${outputJob.id}/files/slidesPdf`}
                     >
                       Slides
-                    </a>
-                  ) : null}
-                  {outputJob?.paths?.srt ? (
-                    <a
-                      className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700"
-                      href={`/api/jobs/${outputJob.id}/files/srt`}
-                    >
-                      Captions
                     </a>
                   ) : null}
                   {outputJob?.paths?.video ? (
