@@ -39,7 +39,7 @@ const normalizeImages = (images: unknown): SlideImage[] => {
         height: raw.height
       };
     })
-    .filter(Boolean) as SlideImage[];
+    .filter((img): img is SlideImage => img !== null && img.width >= 256 && img.height >= 256);
 };
 
 const normalizeSlides = (payload: unknown): SlidesJSON | null => {
@@ -71,8 +71,8 @@ const normalizeSlides = (payload: unknown): SlidesJSON | null => {
 
       const tables = Array.isArray(raw.tables)
         ? raw.tables
-            .filter((item) => typeof item === 'string' && item.trim())
-            .map((item) => (item as string).trim())
+          .filter((item) => typeof item === 'string' && item.trim())
+          .map((item) => (item as string).trim())
         : [];
 
       return {
