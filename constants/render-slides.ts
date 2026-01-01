@@ -10,6 +10,12 @@ export const REVEAL_DIST = path.join(
   'reveal.js',
   'dist'
 );
+export const SHARED_REVEAL_DIST = path.join(
+  process.cwd(),
+  'storage',
+  'reveal',
+  'dist'
+);
 export const TEMPLATE_PATH = path.join(
   process.cwd(),
   'lib',

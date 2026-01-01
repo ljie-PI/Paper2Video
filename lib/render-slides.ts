@@ -11,6 +11,7 @@ import {
   DEFAULT_STYLE,
   LAYOUT_SCHEMAS,
   REVEAL_DIST,
+  SHARED_REVEAL_DIST,
   SLIDE_HEIGHT,
   SLIDE_WIDTH,
   STYLES_DIR,
@@ -57,6 +58,24 @@ const escapeHtml = (value: string) =>
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
+const ensureSharedRevealDist = async () => {
+  try {
+    await fs.access(SHARED_REVEAL_DIST);
+    return;
+  } catch {
+    // Create shared reveal dist once.
+  }
+
+  await fs.mkdir(path.dirname(SHARED_REVEAL_DIST), { recursive: true });
+  try {
+    await fs.cp(REVEAL_DIST, SHARED_REVEAL_DIST, { recursive: true });
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException | null)?.code;
+    if (code !== 'EEXIST' && code !== 'ENOTEMPTY') {
+      throw error;
+    }
+  }
+};
 
 const buildUserPrompt = (slide: Slide, images: SlideImage[]) => {
   const payload = {
@@ -215,12 +234,15 @@ const generateSlideHtml = async (
 };
 
 const buildDeckHtml = async (sections: string[], styleName: string) => {
+  const revealBaseUrl = pathToFileURL(SHARED_REVEAL_DIST)
+    .toString()
+    .replace(/\/?$/, '/');
   const template = await fs.readFile(TEMPLATE_PATH, 'utf8');
   return template
-    .replace(/{{revealCss}}/g, './reveal/dist/reveal.css')
-    .replace(/{{revealThemeCss}}/g, './reveal/dist/theme/white.css')
-    .replace(/{{revealPdfCss}}/g, './reveal/dist/print/pdf.css')
-    .replace(/{{revealJs}}/g, './reveal/dist/reveal.js')
+    .replace(/{{revealCss}}/g, `${revealBaseUrl}reveal.css`)
+    .replace(/{{revealThemeCss}}/g, `${revealBaseUrl}theme/white.css`)
+    .replace(/{{revealPdfCss}}/g, `${revealBaseUrl}print/pdf.css`)
+    .replace(/{{revealJs}}/g, `${revealBaseUrl}reveal.js`)
     .replace(/{{styleCss}}/g, `./styles/${styleName}.css`)
     .replace(/{{width}}/g, String(SLIDE_WIDTH))
     .replace(/{{height}}/g, String(SLIDE_HEIGHT))
@@ -297,10 +319,7 @@ export const renderSlides = async (
     throw new Error('Reveal.js not installed. Run bun install.');
   }
 
-  await fs.mkdir(path.join(renderDir, 'reveal', 'dist'), { recursive: true });
-  await fs.cp(REVEAL_DIST, path.join(renderDir, 'reveal', 'dist'), {
-    recursive: true
-  });
+  await ensureSharedRevealDist();
 
   const renderConcurrency = Math.max(
     1,
