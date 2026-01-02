@@ -147,96 +147,132 @@ const generateSlideHtml = async (
   slide: Slide,
   config: JobConfig,
   promptTemplate: string,
-  baseDir: string
+  baseDir: string,
+  slideIndex: number,
+  outputDir: string
 ): Promise<{ html: string; layout: string }> => {
-  const userPrompt = buildUserPrompt(slide, slide.images ?? [], baseDir);
-  const responseText = await requestLlmText({
-    model: config.model?.trim() ?? null,
-    systemPrompt: promptTemplate,
-    userPrompt
-  });
+  // Check LLM cache for layout and slots
+  const llmCachePath = path.join(outputDir, 'llm-cache', `slide-${slideIndex}.json`);
+  let layout: string | undefined;
+  let slots: Record<string, unknown> | undefined;
 
-  if (!responseText) {
-    throw new Error('LLM returned empty HTML for slide layout.');
+  if (process.env.USE_LLM_CACHE === 'true') {
+    try {
+      const cached = JSON.parse(await fs.readFile(llmCachePath, 'utf8'));
+      layout = cached.layout;
+      slots = cached.slots;
+      logger.debug(`[render-slides] slide ${slideIndex + 1}: using cached LLM result`);
+    } catch {
+      logger.debug(`[render-slides] slide ${slideIndex + 1}: cache miss`);
+    }
   }
 
-  const json = extractJson(responseText);
-  const parsed = JSON.parse(json) as {
-    layout?: unknown;
-    slots?: unknown;
-  };
+  // Generate layout and slots if not cached
+  if (!layout || !slots) {
+    const userPrompt = buildUserPrompt(slide, slide.images ?? [], baseDir);
+    const responseText = await requestLlmText({
+      model: config.model?.trim() ?? null,
+      systemPrompt: promptTemplate,
+      userPrompt
+    });
 
-  const layout =
-    typeof parsed.layout === 'string' ? parsed.layout.toLowerCase().trim() : '';
-  logger.debug(`[render-slides] selected layout: ${layout}`);
-  const schema = layout ? LAYOUT_SCHEMAS[layout] : null;
-  if (!schema) {
-    throw new Error(
-      `Missing or unknown layout template "${layout || 'unknown'}".`
-    );
-  }
-
-  const rawSlots =
-    parsed.slots && typeof parsed.slots === 'object'
-      ? (parsed.slots as Record<string, unknown>)
-      : {};
-  const slots: Record<string, unknown> = {};
-  for (const slot of schema.slots) {
-    const rawValue = rawSlots[slot.name];
-    if (slot.kind === 'image') {
-      if (!rawValue || typeof rawValue !== 'object') {
-        if (slot.required) {
-          throw new Error(
-            `Layout "${schema.id}" requires slot "${slot.name}".`
-          );
-        }
-        slots[slot.name] = null;
-        continue;
-      }
-      const rawImage = rawValue as {
-        path?: unknown;
-        width?: unknown;
-        height?: unknown;
-        caption?: unknown;
-      };
-      const imagePath = typeof rawImage.path === 'string' ? rawImage.path.trim() : '';
-      const width = Number(rawImage.width);
-      const height = Number(rawImage.height);
-      const caption =
-        typeof rawImage.caption === 'string' ? rawImage.caption.trim() : '';
-      if (!imagePath || !Number.isFinite(width) || !Number.isFinite(height)) {
-        throw new Error(
-          `Layout "${schema.id}" requires image slot "${slot.name}" with path, width, height.`
-        );
-      }
-      slots[slot.name] = {
-        path: imagePath,
-        width: Math.round(width),
-        height: Math.round(height),
-        caption: caption ? escapeHtml(caption) : ''
-      };
-      continue;
+    if (!responseText) {
+      throw new Error('LLM returned empty HTML for slide layout.');
     }
 
-    const value =
-      rawValue === undefined || rawValue === null
-        ? ''
-        : typeof rawValue === 'string'
-          ? rawValue
-          : String(rawValue);
+    const json = extractJson(responseText);
+    const parsed = JSON.parse(json) as {
+      layout?: unknown;
+      slots?: unknown;
+    };
 
-    if (slot.required && !value.trim()) {
+    const layoutName =
+      typeof parsed.layout === 'string' ? parsed.layout.toLowerCase().trim() : '';
+    logger.debug(`[render-slides] selected layout: ${layoutName}`);
+    const schema = layoutName ? LAYOUT_SCHEMAS[layoutName] : null;
+    if (!schema) {
       throw new Error(
-        `Layout "${schema.id}" requires slot "${slot.name}".`
+        `Missing or unknown layout template "${layoutName || 'unknown'}".`
       );
     }
 
-    slots[slot.name] =
-      slot.kind === 'text' ? escapeHtml(value.trim()) : sanitizeHtml(value);
+    const rawSlots =
+      parsed.slots && typeof parsed.slots === 'object'
+        ? (parsed.slots as Record<string, unknown>)
+        : {};
+    slots = {};
+    for (const slot of schema.slots) {
+      const rawValue = rawSlots[slot.name];
+      if (slot.kind === 'image') {
+        if (!rawValue || typeof rawValue !== 'object') {
+          if (slot.required) {
+            throw new Error(
+              `Layout "${schema.id}" requires slot "${slot.name}".`
+            );
+          }
+          slots[slot.name] = null;
+          continue;
+        }
+        const rawImage = rawValue as {
+          path?: unknown;
+          width?: unknown;
+          height?: unknown;
+          caption?: unknown;
+        };
+        const imagePath = typeof rawImage.path === 'string' ? rawImage.path.trim() : '';
+        const width = Number(rawImage.width);
+        const height = Number(rawImage.height);
+        const caption =
+          typeof rawImage.caption === 'string' ? rawImage.caption.trim() : '';
+        if (!imagePath || !Number.isFinite(width) || !Number.isFinite(height)) {
+          throw new Error(
+            `Layout "${schema.id}" requires image slot "${slot.name}" with path, width, height.`
+          );
+        }
+        slots[slot.name] = {
+          path: imagePath,
+          width: Math.round(width),
+          height: Math.round(height),
+          caption: caption ? escapeHtml(caption) : ''
+        };
+        continue;
+      }
+
+      const value =
+        rawValue === undefined || rawValue === null
+          ? ''
+          : typeof rawValue === 'string'
+            ? rawValue
+            : String(rawValue);
+
+      if (slot.required && !value.trim()) {
+        throw new Error(
+          `Layout "${schema.id}" requires slot "${slot.name}".`
+        );
+      }
+
+      slots[slot.name] =
+        slot.kind === 'text' ? escapeHtml(value.trim()) : sanitizeHtml(value);
+    }
+
+    layout = schema.id;
+
+    // Save to cache
+    if (process.env.USE_LLM_CACHE === 'true') {
+      await fs.mkdir(path.dirname(llmCachePath), { recursive: true });
+      await fs.writeFile(llmCachePath, JSON.stringify({ layout, slots }, null, 2), 'utf8');
+      logger.debug(`[render-slides] slide ${slideIndex + 1}: cached LLM result`);
+    }
+  }
+
+  // Load schema and render HTML from cached layout and slots
+  const schema = layout ? LAYOUT_SCHEMAS[layout] : null;
+  if (!schema) {
+    throw new Error(`Missing or unknown layout template "${layout || 'unknown'}".`);
   }
 
   const html = await renderLayoutTemplate(schema.id, slots);
-  return { html, layout: schema.id };
+  return { html, layout };
 };
 
 const buildDeckHtml = async (sections: string[], styleName: string) => {
@@ -249,6 +285,7 @@ const buildDeckHtml = async (sections: string[], styleName: string) => {
     .replace(/{{revealThemeCss}}/g, `${revealBaseUrl}theme/white.css`)
     .replace(/{{revealPdfCss}}/g, `${revealBaseUrl}print/pdf.css`)
     .replace(/{{revealJs}}/g, `${revealBaseUrl}reveal.js`)
+    .replace(/{{layoutCss}}/g, `./styles/layout.css`)
     .replace(/{{styleCss}}/g, `./styles/${styleName}.css`)
     .replace(/{{width}}/g, String(SLIDE_WIDTH))
     .replace(/{{height}}/g, String(SLIDE_HEIGHT))
@@ -341,6 +378,8 @@ export const renderSlides = async (
         slide,
         config,
         promptTemplate,
+        outputDir,
+        index,
         outputDir
       );
       logger.debug(
@@ -373,6 +412,8 @@ export const renderSlides = async (
 
   await fs.mkdir(path.join(renderDir, 'styles'), { recursive: true });
   await fs.copyFile(stylePath, path.join(renderDir, 'styles', `${styleName}.css`));
+  const layoutCssPath = path.join(STYLES_DIR, 'layout.css');
+  await fs.copyFile(layoutCssPath, path.join(renderDir, 'styles', 'layout.css'));
 
   const deckPath = path.join(renderDir, 'slides.html');
   await fs.writeFile(deckPath, await buildDeckHtml(sections, styleName), 'utf8');

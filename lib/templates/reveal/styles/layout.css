@@ -1,24 +1,51 @@
 :root {
   --r-main-font-size: 45px;
   --r-heading-font-size: 96px;
+  --slide-width: 1920px;
+  --slide-height: 1080px;
 }
 
-.reveal .slides .layout-text-focus {
+/* Base canvas dimensions */
+.reveal {
+  width: var(--slide-width);
+  height: var(--slide-height);
+}
+
+.reveal .slides {
+  width: 100%;
+  height: 100%;
+}
+
+.reveal section {
+  height: 100%;
+}
+
+/* PDF print styles - must work in both screen and print mode */
+@page {
+  size: 1920px 1080px;
+  margin: 0;
+}
+
+/* Common layout styles */
+.reveal .slides [class*="layout-"] {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   height: 100%;
 }
 
 .reveal .slides .layout-text-focus .body {
-  column-gap: 64px;
-  column-count: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
 }
 
 .reveal .slides .layout-image-right .columns {
   display: flex;
   gap: 64px;
   align-items: center;
+  justify-content: center;
+  flex: 1;
 }
 
 .reveal .slides .layout-image-left .columns,
@@ -27,6 +54,8 @@
   display: flex;
   gap: 64px;
   align-items: center;
+  justify-content: center;
+  flex: 1;
 }
 
 .reveal .slides .layout-image-right .col.text {
@@ -52,14 +81,15 @@
 .reveal .slides .layout-table-and-figure .content-wrapper {
   display: flex;
   flex-direction: column;
-  height: calc(100% - 192px);
-  margin-top: 24px;
+  justify-content: center;
+  flex: 1;
 }
 
 .reveal .slides .layout-table-and-figure .top-section {
   flex: 0 0 30%;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .reveal .slides .layout-table-and-figure .bottom-section {
@@ -67,6 +97,7 @@
   display: flex;
   gap: 64px;
   align-items: center;
+  justify-content: center;
 }
 
 .reveal .slides .layout-table-and-figure .col.table {
@@ -99,8 +130,30 @@
   margin: 0 auto;
 }
 
+.reveal .slides .layout-image-bottom {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+}
+
 .reveal .slides .layout-image-bottom .body {
-  margin-bottom: 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.reveal .slides .layout-image-bottom .media {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.reveal .slides .layout-table-focus {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
 }
 
 .reveal .slides .layout-table-focus .table {
@@ -126,14 +179,15 @@
 .reveal .slides .layout-two-images .content-wrapper {
   display: flex;
   flex-direction: column;
-  height: calc(100% - 192px);
-  margin-top: 24px;
+  justify-content: center;
+  flex: 1;
 }
 
 .reveal .slides .layout-two-images .top-section {
   flex: 0 0 30%;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .reveal .slides .layout-two-images .bottom-section {
@@ -141,6 +195,7 @@
   display: flex;
   gap: 64px;
   align-items: center;
+  justify-content: center;
 }
 
 .reveal .slides .layout-two-images .col.left-image {
@@ -164,4 +219,11 @@
 
 .reveal section figcaption {
   font-size: 29px;
+}
+
+/* Reveal print view forces sections to display:block; restore flex for layouts. */
+html.reveal-print .reveal .slides section[class*="layout-"] {
+  display: flex !important;
+  flex-direction: column;
+  height: var(--slide-height) !important;
 }
