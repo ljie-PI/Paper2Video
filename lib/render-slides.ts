@@ -157,7 +157,7 @@ const generateSlideHtml = async (
   let layout: string | undefined;
   let slots: Record<string, unknown> | undefined;
 
-  if (process.env.USE_LLM_CACHE === 'true') {
+  if (process.env.USE_LLM_CACHE?.toLowerCase() === 'true') {
     try {
       const cached = JSON.parse(await fs.readFile(llmCachePath, 'utf8'));
       layout = cached.layout;
@@ -259,7 +259,7 @@ const generateSlideHtml = async (
     layout = schema.id;
 
     // Save to cache
-    if (process.env.USE_LLM_CACHE === 'true') {
+    if (process.env.USE_LLM_CACHE?.toLowerCase() === 'true') {
       await fs.mkdir(path.dirname(llmCachePath), { recursive: true });
       await fs.writeFile(llmCachePath, JSON.stringify({ layout, slots }, null, 2), 'utf8');
       logger.debug(`[render-slides] slide ${slideIndex + 1}: cached LLM result`);
@@ -330,8 +330,10 @@ const renderDeckAssets = async (deckPath: string, outputDir: string) => {
         getIndices?: (slide: HTMLElement) => { h: number; v?: number; f?: number };
       };
     }).Reveal;
-    if (!reveal?.getSlides || !reveal.getIndices) return [];
-    return reveal.getSlides().map((slide) => reveal.getIndices(slide));
+    const getSlides = reveal?.getSlides;
+    const getIndices = reveal?.getIndices;
+    if (!getSlides || !getIndices) return [];
+    return getSlides().map((slide) => getIndices(slide));
   });
 
   if (!slideIndices.length) {
