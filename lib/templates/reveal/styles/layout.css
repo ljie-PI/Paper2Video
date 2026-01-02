@@ -241,9 +241,20 @@ html.reveal-print .reveal .slides section[class*="layout-"] {
   height: var(--slide-height) !important;
 }
 
+/* Export images uses a dedicated class to avoid full print mode. */
+html.export-images .reveal .slides section[class*="layout-"] {
+  display: flex !important;
+  flex-direction: column;
+  height: var(--slide-height) !important;
+}
+
 /* Reveal PDF export uses html.reveal-print/body.print-pdf depending on mode. */
 .reveal.print-pdf table,
 html.reveal-print .reveal table,
 body.print-pdf .reveal table {
+  box-shadow: inset 0 -2px 0 #cbd5f5;
+}
+
+html.export-images .reveal table {
   box-shadow: inset 0 -2px 0 #cbd5f5;
 }

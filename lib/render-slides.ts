@@ -28,6 +28,7 @@ type RenderedSlide = {
 type RenderedSlidesResult = {
   manifestPath: string;
   pdfPath: string;
+  images: string[];
 };
 
 const resolveImageSrc = (image: SlideImage, baseDir: string) => {
@@ -292,25 +293,90 @@ const buildDeckHtml = async (sections: string[], styleName: string) => {
     .replace(/{{sections}}/g, sections.join('\n'));
 };
 
-const renderDeckToPdf = async (deckPath: string, outputPath: string) => {
+const renderDeckAssets = async (deckPath: string, outputDir: string) => {
+  const imagesDir = path.join(outputDir, 'slides-images');
+  await fs.rm(imagesDir, { recursive: true, force: true });
+  await fs.mkdir(imagesDir, { recursive: true });
+
+  const pdfPath = path.join(outputDir, 'slides.pdf');
+
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
   const page = await browser.newPage();
   await page.setViewport({ width: SLIDE_WIDTH, height: SLIDE_HEIGHT });
-  const imagePath = `${pathToFileURL(deckPath).toString()}?print-pdf`;
-  await page.goto(imagePath, { waitUntil: 'networkidle0' });
+
+  const deckUrl = pathToFileURL(deckPath).toString();
+  await page.goto(deckUrl, { waitUntil: 'networkidle0' });
+  await page.waitForFunction(
+    () => (window as typeof window & { Reveal?: { isReady: () => boolean } }).Reveal?.isReady?.()
+  );
+
+  await page.evaluate(() => {
+    document.documentElement.classList.add('export-images');
+  });
+
+  await page.evaluate(() => {
+    const reveal = (window as typeof window & {
+      Reveal?: { configure: (config: unknown) => void };
+    }).Reveal;
+    reveal?.configure?.({ transition: 'none', backgroundTransition: 'none' });
+  });
+
+  const slideIndices = await page.evaluate(() => {
+    const reveal = (window as typeof window & {
+      Reveal?: {
+        getSlides?: () => HTMLElement[];
+        getIndices?: (slide: HTMLElement) => { h: number; v?: number; f?: number };
+      };
+    }).Reveal;
+    if (!reveal?.getSlides || !reveal.getIndices) return [];
+    return reveal.getSlides().map((slide) => reveal.getIndices(slide));
+  });
+
+  if (!slideIndices.length) {
+    await browser.close();
+    throw new Error('Reveal did not return any slides to render.');
+  }
+
+  const images: string[] = [];
+  for (let index = 0; index < slideIndices.length; index += 1) {
+    const target = slideIndices[index];
+    await page.evaluate((indices) => {
+      (window as typeof window & { Reveal?: { slide: (h: number, v?: number, f?: number) => void } })
+        .Reveal?.slide?.(indices.h, indices.v, indices.f);
+    }, target);
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const imagePath = path.join(
+      imagesDir,
+      `slide-${String(index + 1).padStart(3, '0')}.png`
+    );
+    await page.screenshot({
+      path: imagePath,
+      clip: { x: 0, y: 0, width: SLIDE_WIDTH, height: SLIDE_HEIGHT }
+    });
+    images.push(toRelativePath(imagePath));
+  }
+
+  const pdfUrl = `${deckUrl}?print-pdf`;
+  await page.goto(pdfUrl, { waitUntil: 'networkidle0' });
   await page.waitForFunction(
     () => (window as typeof window & { Reveal?: { isReady: () => boolean } }).Reveal?.isReady?.()
   );
   await page.emulateMediaType('screen');
   await page.pdf({
-    path: outputPath,
+    path: pdfPath,
     printBackground: true,
     width: `${SLIDE_WIDTH}px`,
     height: `${SLIDE_HEIGHT}px`
   });
   await browser.close();
+
+  return {
+    pdfPath: toRelativePath(pdfPath),
+    images
+  };
 };
 
 const runWithConcurrency = async <T, R>(
@@ -434,12 +500,15 @@ export const renderSlides = async (
   );
   logger.debug(`[render-slides] wrote manifest at ${manifestPath}`);
 
-  const pdfPath = path.join(outputDir, 'slides.pdf');
-  await renderDeckToPdf(deckPath, pdfPath);
-  logger.debug(`[render-slides] rendered PDF at ${pdfPath}`);
+  const assets = await renderDeckAssets(deckPath, outputDir);
+  logger.debug(`[render-slides] rendered PDF at ${assets.pdfPath}`);
+  logger.debug(
+    `[render-slides] rendered ${assets.images.length} slide images`
+  );
 
   return {
     manifestPath: toRelativePath(manifestPath),
-    pdfPath: toRelativePath(pdfPath)
+    pdfPath: assets.pdfPath,
+    images: assets.images
   };
 };
