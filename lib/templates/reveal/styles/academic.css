@@ -1,6 +1,6 @@
 :root {
-  --r-main-font: "Helvetica Neue", "Inter", Arial, sans-serif;
-  --r-heading-font: "Helvetica Neue", "Inter", Arial, sans-serif;
+  --r-main-font: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", "Inter", Arial, sans-serif;
+  --r-heading-font: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", "Inter", Arial, sans-serif;
   --r-main-font-size: 45px;
   --r-heading-font-size: 96px;
   --r-heading-line-height: 1.1;
