@@ -1,6 +1,24 @@
 :root {
-  --r-main-font: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", "Inter", Arial, sans-serif;
-  --r-heading-font: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", "Inter", Arial, sans-serif;
+  /*
+   * IMPORTANT: Chinese/Japanese/Korean Font Support
+   *
+   * This project requires system fonts to be installed for proper CJK character rendering.
+   * Please install the following fonts before running:
+   *
+   *   sudo apt-get update
+   *   sudo apt-get install fonts-noto-cjk
+   *
+   * After installation, refresh font cache:
+   *   fc-cache -fv
+   *
+   * Fonts will be used in this priority order:
+   * 1. Noto Sans CJK SC (system installed, supports Chinese/Japanese/Korean)
+   * 2. Noto Sans SC (fallback)
+   * 3. PingFang SC (macOS)
+   * 4. Microsoft YaHei (Windows)
+   */
+  --r-main-font: "Noto Sans CJK SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --r-heading-font: "Noto Sans CJK SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   --r-heading-line-height: 1.1;
   --r-main-color: #0b0f19;
   --r-heading-color: #0b0f19;
