@@ -164,9 +164,11 @@
 }
 
 .reveal .slides .layout-table-focus .note {
-  margin-top: 24px;
-  font-size: 40px;
+  font-size: 32px;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .reveal .slides .layout-table-and-figure .bottom-section img {
@@ -214,11 +216,20 @@
 }
 
 .reveal .slides section table {
-  font-size: 26px;
+  font-size: 20px;
 }
 
 .reveal section figcaption {
-  font-size: 29px;
+  font-size: 22px;
+}
+
+.reveal .slides .layout-image-bottom .body,
+.reveal .slides .layout-image-left .body,
+.reveal .slides .layout-image-right .body,
+.reveal .slides .layout-table-and-figure .body,
+.reveal .slides .layout-table-focus .body,
+.reveal .slides .layout-two-images .body {
+  font-size: 36px;
 }
 
 /* Reveal print view forces sections to display:block; restore flex for layouts. */
