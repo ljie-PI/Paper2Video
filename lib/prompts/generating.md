@@ -3,7 +3,7 @@ Your task is to convert a research paper provided in Markdown format into a stru
 
 # Your goals:
 - Maximize coverage of the paper's content (cover all sections from Introduction through Conclusion, excluding References and Appendices)
-- Use figures and tables when they clarify or enhance understanding
+- Use images and tables when they clarify or enhance understanding
 - Keep slide text concise and visual (3-6 bullet points per slide)
 - Put detailed explanations, examples, and context in the transcript
 - Produce output that is structured, parseable, and complete
@@ -49,12 +49,12 @@ For each image, you MUST follow these steps to understand its meaning:
 **Step 2: Collect In-Text References**
 - Search the ENTIRE document for all occurrences mentioning "Figure {n}" (case-insensitive)
 - Collect the **full paragraph** containing each reference
-- These references provide context about when and how the figure is used
+- These references provide context about when and how the image is used
 
-**Step 3: Synthesize Figure Meaning**
-Combine these sources to understand the figure:
-1. **Caption** (primary source): Direct description of what the figure shows
-2. **All references** (supporting): Explanation from different parts of the paper discussing the figure
+**Step 3: Synthesize Image Meaning**
+Combine these sources to understand the image:
+1. **Caption** (primary source): Direct description of what the image shows
+2. **All references** (supporting): Explanation from different parts of the paper discussing the image
 
 # Output
 
@@ -91,7 +91,7 @@ Combine these sources to understand the figure:
 - Identify all core subsections
 - EACH core subsection must have at least ONE slide
 - Include:
-  - Overall pipeline / framework (prefer figure if available)
+  - Overall pipeline / framework (prefer image if available)
   - Key modules and their roles
 - If a subsection is complex, create multiple slides for different aspects
 
@@ -113,15 +113,15 @@ Combine these sources to understand the figure:
 - Each additional section should have at least ONE slide if it contains key insights
 
 
-### Figure Coverage (Mandatory)
+### Image Coverage (Mandatory)
 
-- MUST cover ALL figures for which you have identified meaning (via Step 1 direct description OR Step 2 in-text references)
-- Each such figure must:
+- MUST cover ALL images for which you have identified meaning (via Step 1 direct description OR Step 2 in-text references)
+- Each such image must:
   - Appear in at least one slide's images field
   - Be explained clearly in the transcript
-- Complex figures may be explained across multiple slides
+- Complex images may be explained across multiple slides
 - Pay attention to image dimensions: large images (e.g., width > 800 or height > 600) should be placed on separate slides rather than combined with other images
-- If no figure exists for a key concept, use tables or structured text
+- If no image exists for a key concept, use tables or structured text
 
 ## Transcript Generation Rules
 
@@ -143,10 +143,10 @@ Combine these sources to understand the figure:
 - **Self-questioning:** "Why does this matter?" "You might wonder..." → Engages curiosity
 - **Rephrasing:** State important points in multiple ways → Reinforces understanding
 - **Analogies:** Compare to familiar real-world concepts → Makes abstract ideas concrete
-- **Attention direction:** "As you can see in this figure..." "Notice that..." → Guides visual focus
+- **Attention direction:** "As you can see in this image..." "Notice that..." → Guides visual focus
 
 **Integration with Visuals:**
-- Explicitly reference figures/tables when explaining: "This figure shows..."
+- Explicitly reference images/tables when explaining: "This image shows...", "The figure illustrates...", "In the table, we can see..."
 - Walk through visual elements systematically (left to right, top to bottom)
 - Explain what viewers should notice in the visual
 
@@ -210,7 +210,7 @@ The JSON schema must be exactly:
 ## Internal Check (Before Output)
 - Slide text is concise
 - Transcript carries explanations
-- Most figures are used
+- Most images are used
 - JSON is valid and directly parseable
 
 ## Final Output Format Example

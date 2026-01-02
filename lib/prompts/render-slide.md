@@ -89,7 +89,7 @@ Apply rules in this priority order:
     "title": "Key Findings",
     "body": "<ul><li>Method A improves accuracy</li><li>Method B reduces latency</li></ul>",
     "image": {
-      "url": "file:///path/to/figure.png",
+      "path": "file:///path/to/figure.png",
       "width": 1200,
       "height": 800,
       "caption": "Comparison of methods A and B."

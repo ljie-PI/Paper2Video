@@ -194,23 +194,23 @@ const generateSlideHtml = async (
         continue;
       }
       const rawImage = rawValue as {
-        url?: unknown;
+        path?: unknown;
         width?: unknown;
         height?: unknown;
         caption?: unknown;
       };
-      const url = typeof rawImage.url === 'string' ? rawImage.url.trim() : '';
+      const imagePath = typeof rawImage.path === 'string' ? rawImage.path.trim() : '';
       const width = Number(rawImage.width);
       const height = Number(rawImage.height);
       const caption =
         typeof rawImage.caption === 'string' ? rawImage.caption.trim() : '';
-      if (!url || !Number.isFinite(width) || !Number.isFinite(height)) {
+      if (!imagePath || !Number.isFinite(width) || !Number.isFinite(height)) {
         throw new Error(
-          `Layout "${schema.id}" requires image slot "${slot.name}" with url, width, height.`
+          `Layout "${schema.id}" requires image slot "${slot.name}" with path, width, height.`
         );
       }
       slots[slot.name] = {
-        url: url,
+        path: imagePath,
         width: Math.round(width),
         height: Math.round(height),
         caption: caption ? escapeHtml(caption) : ''
@@ -261,8 +261,8 @@ const renderDeckToPdf = async (deckPath: string, outputPath: string) => {
   });
   const page = await browser.newPage();
   await page.setViewport({ width: SLIDE_WIDTH, height: SLIDE_HEIGHT });
-  const url = `${pathToFileURL(deckPath).toString()}?print-pdf`;
-  await page.goto(url, { waitUntil: 'networkidle0' });
+  const imagePath = `${pathToFileURL(deckPath).toString()}?print-pdf`;
+  await page.goto(imagePath, { waitUntil: 'networkidle0' });
   await page.waitForFunction(
     () => (window as typeof window & { Reveal?: { isReady: () => boolean } }).Reveal?.isReady?.()
   );

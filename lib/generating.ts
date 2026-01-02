@@ -39,7 +39,7 @@ const normalizeImages = (images: unknown): SlideImage[] => {
         height: raw.height
       };
     })
-    .filter((img): img is SlideImage => img !== null && img.width >= 256 && img.height >= 256);
+    .filter((img): img is SlideImage => img !== null && img.width >= 128 && img.height >= 128);
 };
 
 const normalizeSlides = (payload: unknown): SlidesJSON | null => {
