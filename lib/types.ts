@@ -2,6 +2,7 @@ export type JobStatus =
   | 'pending'
   | 'parsing'
   | 'generating'
+  | 'composing'
   | 'rendering'
   | 'completed'
   | 'failed';

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { JobRecord, JobStatus } from '@/lib/types';
 
@@ -11,6 +12,7 @@ const statusMeta: Record<
   pending: { label: 'Queued', tone: 'bg-slate-200', text: 'text-slate-700' },
   parsing: { label: 'Parsing', tone: 'bg-sky-100', text: 'text-sky-700' },
   generating: { label: 'Generating', tone: 'bg-indigo-100', text: 'text-indigo-700' },
+  composing: { label: 'Composing', tone: 'bg-amber-100', text: 'text-amber-700' },
   rendering: { label: 'Rendering', tone: 'bg-amber-100', text: 'text-amber-700' },
   completed: { label: 'Completed', tone: 'bg-emerald-100', text: 'text-emerald-700' },
   failed: { label: 'Failed', tone: 'bg-rose-100', text: 'text-rose-700' }
@@ -28,21 +30,21 @@ const stages: Array<{
     title: 'Parsing',
     detail: 'PDF -> structured Markdown',
     activeOn: ['parsing'],
-    doneOn: ['generating', 'rendering', 'completed']
+    doneOn: ['generating', 'composing', 'rendering', 'completed']
   },
   {
     id: 'generating',
     title: 'Generating',
     detail: 'Markdown -> slides JSON',
     activeOn: ['generating'],
-    doneOn: ['rendering', 'completed']
+    doneOn: ['composing', 'rendering', 'completed']
   },
   {
     id: 'composing',
     title: 'Rendering Slides',
     detail: 'LLM layout -> HTML -> PDF',
-    activeOn: ['rendering'],
-    doneOn: ['completed']
+    activeOn: ['composing'],
+    doneOn: ['rendering', 'completed']
   },
   {
     id: 'rendering',
@@ -62,6 +64,11 @@ const formatBytes = (value: number) => {
 };
 
 export default function HomePage() {
+  const searchParams = useSearchParams();
+  const jobIdParam = useMemo(() => {
+    const raw = searchParams.get('jobId') ?? searchParams.get('jobid');
+    return raw ? raw.trim() : '';
+  }, [searchParams]);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [voiceSample, setVoiceSample] = useState<File | null>(null);
   const [enableVideo, setEnableVideo] = useState(true);
@@ -84,6 +91,25 @@ export default function HomePage() {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
+
+  useEffect(() => {
+    if (!jobIdParam) return;
+    let active = true;
+    fetch(`/api/jobs/${jobIdParam}`)
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return (await response.json()) as JobRecord;
+      })
+      .then((data) => {
+        if (!active || !data) return;
+        setJob(data);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      active = false;
+    };
+  }, [jobIdParam]);
 
   useEffect(() => {
     if (!job || job.status === 'completed' || job.status === 'failed') return;
@@ -119,7 +145,7 @@ export default function HomePage() {
   };
 
   const handleSubmit = async () => {
-    if (!pdfFile) {
+    if (!pdfFile && !jobIdParam) {
       setError('Please upload a PDF first.');
       return;
     }
@@ -127,7 +153,12 @@ export default function HomePage() {
     setLoading(true);
 
     const formData = new FormData();
-    formData.append('pdf', pdfFile);
+    if (jobIdParam) {
+      formData.append('jobId', jobIdParam);
+    }
+    if (pdfFile) {
+      formData.append('pdf', pdfFile);
+    }
     formData.append('enableVideo', String(enableVideo));
     formData.append('voiceClone', String(voiceClone));
     formData.append('ttsSpeed', String(ttsSpeed));

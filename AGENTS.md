@@ -33,5 +33,4 @@
 - External services are optional; configure via `.env`/`.env.local` (see `.env.example`):
   - `DOCLING_URL` for PDF parsing.
   - `QWEN_API_KEY` for LLM summarization (stubbed today).
-  - `VIDEO_RENDER_ENABLED` to enable MP4 generation in the pipeline.
 - Uploaded PDFs and generated outputs are stored under `storage/` on the local filesystem.
