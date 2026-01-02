@@ -234,22 +234,23 @@ const requestTtsAudio = async (
   const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
   try {
-    logger.debug('[tts] input.speechRate:', input.speechRate);
+    const body = {
+      model: config.model,
+      input: {
+        text: input.text,
+        voice: input.voice,
+        language_type: input.languageType,
+        ...(input.speechRate !== undefined ? { speech_rate: input.speechRate } : {})
+      }
+    };
+    logger.debug('[tts] request body:', body);
     const response = await fetch(config.url, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${config.apiKey}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        model: config.model,
-        input: {
-          text: input.text,
-          voice: input.voice,
-          language_type: input.languageType,
-          ...(input.speechRate !== undefined ? { speech_rate: input.speechRate } : {})
-        }
-      }),
+      body: JSON.stringify(body),
       signal: controller.signal
     });
 
