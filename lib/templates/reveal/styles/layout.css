@@ -198,6 +198,7 @@
   gap: 64px;
   align-items: center;
   justify-content: center;
+  max-height: 600px;
 }
 
 .reveal .slides .layout-two-images .col.left-image {
