@@ -157,10 +157,10 @@
 }
 
 .reveal .slides .layout-table-focus .table {
-  margin-top: 32px;
-  margin-left: auto;
-  margin-right: auto;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .reveal .slides .layout-table-focus .note {
@@ -228,7 +228,8 @@
 .reveal .slides .layout-image-right .body,
 .reveal .slides .layout-table-and-figure .body,
 .reveal .slides .layout-table-focus .body,
-.reveal .slides .layout-two-images .body {
+.reveal .slides .layout-two-images .body,
+.reveal .slides .layout-two-columns .body {
   font-size: 36px;
 }
 
@@ -237,4 +238,11 @@ html.reveal-print .reveal .slides section[class*="layout-"] {
   display: flex !important;
   flex-direction: column;
   height: var(--slide-height) !important;
+}
+
+/* Reveal PDF export uses html.reveal-print/body.print-pdf depending on mode. */
+.reveal.print-pdf table,
+html.reveal-print .reveal table,
+body.print-pdf .reveal table {
+  box-shadow: inset 0 -2px 0 #cbd5f5;
 }

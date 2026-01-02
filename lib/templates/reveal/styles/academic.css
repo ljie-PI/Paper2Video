@@ -40,7 +40,7 @@
 }
 
 .reveal section table {
-  width: auto;
+  min-width: 75%;
   max-width: 100%;
   border-collapse: collapse;
   margin: 0 auto;
@@ -53,7 +53,6 @@
 }
 
 .reveal section figure {
-  margin: 24px auto;
   text-align: center;
 }
 
