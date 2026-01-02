@@ -1,8 +1,6 @@
 :root {
   --r-main-font: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", "Inter", Arial, sans-serif;
   --r-heading-font: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", "Inter", Arial, sans-serif;
-  --r-main-font-size: 45px;
-  --r-heading-font-size: 96px;
   --r-heading-line-height: 1.1;
   --r-main-color: #0b0f19;
   --r-heading-color: #0b0f19;
@@ -24,9 +22,10 @@
 }
 
 .reveal section table {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   border-collapse: collapse;
-  font-size: 26px;
+  margin: 0 auto;
 }
 
 .reveal section table th,
@@ -36,11 +35,11 @@
 }
 
 .reveal section figure {
-  margin: 24px 0;
+  margin: 24px auto;
+  text-align: center;
 }
 
 .reveal section figcaption {
-  font-size: 29px;
   color: #475569;
 }
 

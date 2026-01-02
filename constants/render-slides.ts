@@ -97,9 +97,32 @@ export const LAYOUT_SCHEMAS: Record<string, LayoutSchema> = {
     templateFile: 'table-and-figure.html',
     slots: [
       { name: 'title', required: true, kind: 'text' },
+      { name: 'body', required: true, kind: 'html' },
       { name: 'table', required: true, kind: 'html' },
-      { name: 'image', required: true, kind: 'image' },
-      { name: 'note', required: false, kind: 'html' }
+      { name: 'image', required: true, kind: 'image' }
+    ]
+  },
+  'two-images': {
+    id: 'two-images',
+    templateFile: 'two-images.html',
+    slots: [
+      { name: 'title', required: true, kind: 'text' },
+      { name: 'body', required: true, kind: 'html' },
+      { name: 'leftImage', required: true, kind: 'image' },
+      { name: 'rightImage', required: true, kind: 'image' }
     ]
   }
 };
+
+// Validate that each layout has at most one table slot
+const validateLayoutSchemas = () => {
+  for (const [layoutId, schema] of Object.entries(LAYOUT_SCHEMAS)) {
+    const tableSlots = schema.slots.filter(s => s.name === 'table');
+
+    if (tableSlots.length > 1) {
+      throw new Error(`Layout "${layoutId}" has more than one table slot. Maximum allowed: 1.`);
+    }
+  }
+};
+
+validateLayoutSchemas();

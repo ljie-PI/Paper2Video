@@ -66,6 +66,7 @@ Combine these sources to understand the image:
 - Text should highlight key points only
 - Prefer images, figures, and tables over text
 - When content exceeds slide capacity, split into multiple slides rather than crowding
+- Each slide can contain at most one table
 
 
 ### Required Slide Structure

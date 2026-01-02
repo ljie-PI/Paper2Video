@@ -1,16 +1,20 @@
 <section class="slide layout-table-and-figure" data-layout="table-and-figure">
   <h2>{{title}}</h2>
-  <div class="columns">
-    <div class="col table">
-      {{table}}
+  <div class="content-wrapper">
+    <div class="top-section">
+      <div class="body">
+        {{body}}
+      </div>
     </div>
-    <div class="col figure">
-      <figure class="image">
-        <img src="{{image.path}}" width="{{image.width}}" height="{{image.height}}" />
-      </figure>
+    <div class="bottom-section">
+      <div class="col table">
+        {{table}}
+      </div>
+      <div class="col figure">
+        <figure class="image">
+          <img src="{{image.path}}" width="{{image.width}}" height="{{image.height}}" />
+        </figure>
+      </div>
     </div>
-  </div>
-  <div class="note">
-    {{note}}
   </div>
 </section>

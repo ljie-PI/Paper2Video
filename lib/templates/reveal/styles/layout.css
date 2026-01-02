@@ -1,87 +1,167 @@
-/* Layout-specific styles for different slide layouts */
+:root {
+  --r-main-font-size: 45px;
+  --r-heading-font-size: 96px;
+}
 
-.layout-text-focus .body {
+.reveal .slides .layout-text-focus {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+.reveal .slides .layout-text-focus .body {
   column-gap: 64px;
   column-count: 2;
 }
 
-.layout-image-right .columns {
+.reveal .slides .layout-image-right .columns {
   display: flex;
   gap: 64px;
-  align-items: flex-start;
+  align-items: center;
 }
 
-.layout-image-left .columns,
-.layout-two-columns .columns,
-.layout-table-and-figure .columns {
+.reveal .slides .layout-image-left .columns,
+.reveal .slides .layout-two-columns .columns,
+.reveal .slides .layout-table-and-figure .columns {
   display: flex;
   gap: 64px;
-  align-items: flex-start;
+  align-items: center;
 }
 
-.layout-image-right .col.text {
+.reveal .slides .layout-image-right .col.text {
   flex: 1 1 40%;
 }
 
-.layout-image-right .col.media {
+.reveal .slides .layout-image-right .col.media {
   flex: 1 1 60%;
 }
 
-.layout-image-left .col.text {
+.reveal .slides .layout-image-left .col.text {
   flex: 1 1 40%;
 }
 
-.layout-image-left .col.media {
+.reveal .slides .layout-image-left .col.media {
   flex: 1 1 60%;
 }
 
-.layout-two-columns .col {
+.reveal .slides .layout-two-columns .col {
   flex: 1 1 50%;
 }
 
-.layout-table-and-figure .col.table {
-  flex: 1 1 55%;
+.reveal .slides .layout-table-and-figure .content-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 192px);
+  margin-top: 24px;
 }
 
-.layout-table-and-figure .col.figure {
-  flex: 1 1 45%;
+.reveal .slides .layout-table-and-figure .top-section {
+  flex: 0 0 30%;
+  display: flex;
+  align-items: center;
 }
 
-.layout-image-right .col,
-.layout-image-left .col,
-.layout-two-columns .col,
-.layout-table-and-figure .col {
+.reveal .slides .layout-table-and-figure .bottom-section {
+  flex: 1;
+  display: flex;
+  gap: 64px;
+  align-items: center;
+}
+
+.reveal .slides .layout-table-and-figure .col.table {
+  flex: 0 0 60%;
+}
+
+.reveal .slides .layout-table-and-figure .col.figure {
+  flex: 0 0 40%;
+}
+
+.reveal .slides .layout-image-right .col,
+.reveal .slides .layout-image-left .col,
+.reveal .slides .layout-two-columns .col,
+.reveal .slides .layout-table-and-figure .bottom-section .col {
   padding: 0 24px;
 }
 
-.layout-image-right img,
-.layout-image-left img {
+.reveal .slides .layout-image-right img,
+.reveal .slides .layout-image-left img {
   width: 1152px;
   height: auto;
   display: block;
+  margin: 0 auto;
 }
 
-.layout-image-bottom img {
+.reveal .slides .layout-image-bottom img {
   width: auto;
   height: 500px;
   display: block;
   margin: 0 auto;
 }
 
-.layout-image-bottom .body {
+.reveal .slides .layout-image-bottom .body {
   margin-bottom: 36px;
 }
 
-.layout-table-focus .table {
+.reveal .slides .layout-table-focus .table {
   margin-top: 32px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
 }
 
-.layout-table-focus .note {
+.reveal .slides .layout-table-focus .note {
   margin-top: 24px;
   font-size: 40px;
+  text-align: center;
 }
 
-.layout-table-and-figure .note {
+.reveal .slides .layout-table-and-figure .bottom-section img {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.reveal .slides .layout-two-images .content-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 192px);
   margin-top: 24px;
-  font-size: 40px;
+}
+
+.reveal .slides .layout-two-images .top-section {
+  flex: 0 0 30%;
+  display: flex;
+  align-items: center;
+}
+
+.reveal .slides .layout-two-images .bottom-section {
+  flex: 1;
+  display: flex;
+  gap: 64px;
+  align-items: center;
+}
+
+.reveal .slides .layout-two-images .col.left-image {
+  flex: 0 0 40%;
+}
+
+.reveal .slides .layout-two-images .col.right-image {
+  flex: 0 0 60%;
+}
+
+.reveal .slides .layout-two-images .bottom-section img {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.reveal .slides section table {
+  font-size: 26px;
+}
+
+.reveal section figcaption {
+  font-size: 29px;
 }

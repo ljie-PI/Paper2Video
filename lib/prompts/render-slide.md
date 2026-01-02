@@ -17,7 +17,7 @@ Return ONLY valid JSON (no Markdown, no code fences, no commentary):
 
 ## Layout Selection Guidelines
 
-**Choose layout based on content priority and balance:**
+### Choose layout based on content priority and balance:
 
 1. **text-focus**: Text-only slides, no images/tables
 2. **image-right**: One primary image + moderate text (image on right 60%)
@@ -26,16 +26,21 @@ Return ONLY valid JSON (no Markdown, no code fences, no commentary):
 5. **table-focus**: Table is the main content, minimal text
 6. **table-and-figure**: Both table and image are equally important
 7. **two-columns**: Two text columns, no images/tables
+8. **two-images**: Two images side-by-side with text on top (30% text, 40% left image, 60% right image)
 
 **Choosing between image-left/right vs image-bottom:**
 Apply rules in this priority order:
-1. **Priority 1**: If text has <3 bullet points AND width/height ratio > 1.25 → use **image-bottom**
+1. **Priority 1**: If text has <3 bullet points AND width/height ratio > 1.5 → use **image-bottom**
 2. **Priority 2**: Otherwise, randomly choose between **image-left** or **image-right** (50/50)
 
-**Example calculations:**
+Example calculations:
 - Image 1200x600: ratio = 2.0 → if text <3 items → image-bottom
-- Image 800x600: ratio = 1.33 → if text <3 items → image-bottom
 - Image 800x800: ratio = 1.0 → use image-left or image-right (regardless of text length)
+
+**Choosing between two-images:**
+Use **two-images** layout when you have exactly 2 images and minimal text.
+- IMPORTANT: Place the narrower image on the left (40%) and the wider image on the right (60%)
+- Compare image widths: the image with smaller width goes to leftImage, larger width goes to rightImage
 
 ### Image Dimensions
 - The "width"/"height" in input are the image's original dimensions
@@ -73,6 +78,9 @@ Apply rules in this priority order:
 7) **table-and-figure**
    - Required: title (plain text), table (HTML with `<table><thead><tbody>`), image (object with path, width, height, optional caption)
    - Optional: note (HTML, short takeaway)
+
+8) **two-images**
+   - Required: title (plain text), body (HTML), leftImage (object with path, width, height, optional caption), rightImage (object with path, width, height, optional caption)
 
 ## Content Rules
 1. Presentation style: academic, clean, neutral, professional; no marketing tone
