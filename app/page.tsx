@@ -465,10 +465,10 @@ export default function HomePage() {
                     ? 'Video output is ready for download.'
                     : 'Video output is disabled or not yet rendered.'}
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="flex justify-center gap-6">
                   {outputJob?.paths?.slidesPdf ? (
                     <a
-                      className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700"
+                      className="w-32 rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700"
                       href={`/api/jobs/${outputJob.id}/files/slidesPdf`}
                     >
                       Slides
@@ -476,7 +476,7 @@ export default function HomePage() {
                   ) : null}
                   {outputJob?.paths?.video ? (
                     <a
-                      className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700"
+                      className="w-32 rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700"
                       href={`/api/jobs/${outputJob.id}/files/video`}
                     >
                       Video
