@@ -16,7 +16,8 @@ const contentTypes: Record<string, string> = {
 };
 
 const downloadNames: Record<string, string> = {
-  slidesPdf: 'slides.pdf'
+  slidesPdf: 'slides.pdf',
+  video: 'video.mp4'
 };
 
 export async function GET(
