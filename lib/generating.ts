@@ -19,6 +19,12 @@ const extractJson = (text: string) => {
   return trimmed;
 };
 
+const escapeHtml = (text: string): string => {
+  return text
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+};
+
 const normalizeImages = (images: unknown): SlideImage[] => {
   if (!Array.isArray(images)) return [];
   return images
@@ -58,11 +64,11 @@ const normalizeSlides = (payload: unknown): SlidesJSON | null => {
         transcript?: unknown;
       };
 
-      const title = typeof raw.title === 'string' ? raw.title.trim() : '';
+      const title = typeof raw.title === 'string' ? escapeHtml(raw.title.trim()) : '';
       if (!title) return null;
 
       const textContents =
-        typeof raw.text_contents === 'string' ? raw.text_contents.trim() : '';
+        typeof raw.text_contents === 'string' ? escapeHtml(raw.text_contents.trim()) : '';
       if (!textContents) return null;
 
       const transcript =
