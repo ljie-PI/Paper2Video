@@ -30,7 +30,7 @@ export async function GET(
     return NextResponse.json({ error: 'Markdown missing.' }, { status: 400 });
   }
 
-  const slides = await generateSlides(markdown, job.config);
+  const slides = await generateSlides(markdown, job.config, id);
   const slidesPath = await writeSlidesJson(id, slides);
 
   await updateJob(id, {

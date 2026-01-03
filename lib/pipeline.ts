@@ -184,7 +184,7 @@ const runPipeline = async (jobId: string) => {
   let slidesPath = existingSlides?.slidesPath ?? null;
   if (!slides) {
     slides = await runStage('generating', async () => {
-      return generateSlides(markdownResult.markdown, job.config);
+      return generateSlides(markdownResult.markdown, job.config, jobId);
     });
   }
   if (!slides) {
