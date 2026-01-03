@@ -7,6 +7,7 @@ import { generateSlideNarrations } from './tts';
 import { renderVideoFromSlides } from './video';
 import { getJob, updateJob } from './job-store';
 import { outputsDir } from './storage';
+import { logger } from './logger';
 import type { SlidesJSON } from './types';
 
 const isVideoEnabled = (enableVideo: boolean) => enableVideo;
@@ -52,9 +53,14 @@ const loadMarkdownFromJob = async (
   const docPath =
     job.paths?.doc ?? (await resolveExistingPath(jobId, undefined, 'paper.md'));
   if (docPath && (await fileExists(docPath))) {
+    logger.debug('[pipeline] loadMarkdownFromJob: loading from file', {
+      jobId,
+      docPath
+    });
     const raw = await fs.readFile(toAbsolutePath(docPath), 'utf8');
     return { markdown: raw, docPath };
   }
+  logger.debug('[pipeline] loadMarkdownFromJob: no existing markdown, will parse from PDF');
   return { markdown: '', docPath: null };
 };
 
@@ -124,6 +130,15 @@ export const startJobPipeline = (jobId: string) => {
 
 const runPipeline = async (jobId: string) => {
   const job = await getJob(jobId);
+  logger.debug('[pipeline] job fetched', {
+    id: jobId,
+    found: Boolean(job),
+    status: job?.status,
+    paths: job?.paths,
+    config: job?.config,
+    hasMarkdown: Boolean(job?.markdown_content),
+    hasSlides: Boolean(job?.slides_json)
+  });
   if (!job) return;
 
   const failStage = async (stage: string, error: unknown) => {
@@ -144,15 +159,13 @@ const runPipeline = async (jobId: string) => {
   };
 
   await updateJob(jobId, { status: 'parsing', error: null, errorStage: null });
-
   if (!job.paths.pdf) {
     throw new Error('Missing source PDF path.');
   }
-
   const pdfPath = toAbsolutePath(job.paths.pdf);
   const markdownResult = await runStage('parsing', async () => {
     const existing = await loadMarkdownFromJob(jobId, job);
-    if (existing) return existing;
+    if (existing.markdown) return existing;
     return convertPdfToMarkdown(pdfPath, jobId);
   });
   if (

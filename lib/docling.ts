@@ -351,14 +351,16 @@ const materializeDoclingOutput = async (
 };
 
 export const convertPdfToMarkdown = async (pdfPath: string, jobId: string) => {
+  logger.info(`[docling] convertPdfToMarkdown: processing PDF ${pdfPath} for job ${jobId}`);
   const outputDir = outputsDir(jobId);
   await fs.mkdir(outputDir, { recursive: true });
 
   let markdown: string;
   let imageMapping: Map<string, string> = new Map();
 
-  if (process.env.DOCLING_URL) {
-    const doclingUrl = normalizeDoclingUrl(process.env.DOCLING_URL);
+  const doclingUrl = normalizeDoclingUrl(process.env.DOCLING_URL ?? '');
+  logger.info(`[docling] convertPdfToMarkdown: using DOCLING_URL=${doclingUrl ?? 'not set'}`);
+  if (doclingUrl) {
     const { taskId } = await createDoclingTask(doclingUrl, pdfPath);
     await pollDoclingTask(doclingUrl, taskId);
     const zipPath = await fetchDoclingResult(doclingUrl, taskId, outputDir);

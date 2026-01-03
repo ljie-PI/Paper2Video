@@ -90,7 +90,7 @@ const translations = {
     queued: '排队中',
     parsing: '解析中',
     generating: '生成中',
-    composing: '渲染中',
+    composing: '构建中',
     rendering: '渲染中',
     completed: '已完成',
     failed: '失败',
