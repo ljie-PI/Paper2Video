@@ -1,8 +1,9 @@
 # Paper2Video Atelier
 
-![UI Screenshot](./docs/ui-screenshot.svg)
+![UI Screenshot](./docs/ScreenShot_Paper2Video.png)
 
 Transform dense academic papers into cinematic video explainers with AI-powered narration, automated slide generation, and professional video production.
+[查看中文版](./README_CN.md)
 
 ## Features
 
