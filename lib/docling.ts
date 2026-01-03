@@ -56,10 +56,29 @@ const readPngDimensions = async (filePath: string) => {
   }
 };
 
+const createImageMapping = (markdown: string): Map<string, string> => {
+  const pattern = /!\[image\]\((artifacts\/image_[^)]+\.png)\)/gi;
+  const matches = Array.from(markdown.matchAll(pattern));
+  const mapping = new Map<string, string>();
+
+  matches.forEach((match) => {
+    const fullPath = match[1];
+    // Extract prefix: artifacts/image_000005 from artifacts/image_000005_longhash.png
+    // Too long image path may be modified by LLM, so only pass short path to LLM
+    const prefixMatch = fullPath.match(/(artifacts\/image_\d+)/);
+    if (prefixMatch) {
+      const prefix = prefixMatch[1];
+      mapping.set(prefix, fullPath);
+    }
+  });
+
+  return mapping;
+};
+
 const appendImageSizeInfo = async (markdown: string, outputDir: string) => {
   const pattern = /!\[image\]\((artifacts\/image_[^)]+\.png)\)/gi;
   const matches = Array.from(markdown.matchAll(pattern));
-  if (!matches.length) return markdown;
+  if (!matches.length) return { markdown, imageMapping: new Map() };
 
   const sizes = new Map<string, { width: number; height: number }>();
   await Promise.all(
@@ -80,11 +99,19 @@ const appendImageSizeInfo = async (markdown: string, outputDir: string) => {
     })
   );
 
-  return markdown.replace(pattern, (fullMatch, relativePath: string) => {
+  const imageMapping = createImageMapping(markdown);
+
+  const updatedMarkdown = markdown.replace(pattern, (fullMatch, relativePath: string) => {
     const size = sizes.get(relativePath);
     if (!size) return fullMatch;
-    return `![image_${size.width}_${size.height}](${relativePath})`;
+
+    const prefixMatch = relativePath.match(/(artifacts\/image_\d+)/);
+    const prefix = prefixMatch ? prefixMatch[1] : relativePath;
+
+    return `![image_${size.width}_${size.height}](${prefix})`;
   });
+
+  return { markdown: updatedMarkdown, imageMapping };
 };
 
 const requestJson = async <T>(
@@ -293,7 +320,7 @@ const findArtifactsDir = async (rootDir: string): Promise<string | null> => {
 const materializeDoclingOutput = async (
   extractDir: string,
   outputDir: string
-) => {
+): Promise<{ markdown: string; imageMapping: Map<string, string> }> => {
   const markdownPath = await findFirstMarkdown(extractDir);
   if (!markdownPath) {
     throw new Error('Docling output missing markdown file');
@@ -319,7 +346,8 @@ const materializeDoclingOutput = async (
   logger.debug(
     `[docling] materialized output from ${extractDir}, output to ${outputDir}`
   );
-  return appendImageSizeInfo(markdown, outputDir);
+  const result = await appendImageSizeInfo(markdown, outputDir);
+  return result;
 };
 
 export const convertPdfToMarkdown = async (pdfPath: string, jobId: string) => {
@@ -327,6 +355,7 @@ export const convertPdfToMarkdown = async (pdfPath: string, jobId: string) => {
   await fs.mkdir(outputDir, { recursive: true });
 
   let markdown: string;
+  let imageMapping: Map<string, string> = new Map();
 
   if (process.env.DOCLING_URL) {
     const doclingUrl = normalizeDoclingUrl(process.env.DOCLING_URL);
@@ -334,7 +363,9 @@ export const convertPdfToMarkdown = async (pdfPath: string, jobId: string) => {
     await pollDoclingTask(doclingUrl, taskId);
     const zipPath = await fetchDoclingResult(doclingUrl, taskId, outputDir);
     const extractDir = await extractDoclingZip(zipPath, outputDir);
-    markdown = await materializeDoclingOutput(extractDir, outputDir);
+    const result = await materializeDoclingOutput(extractDir, outputDir);
+    markdown = result.markdown;
+    imageMapping = result.imageMapping;
   } else {
     markdown = stubMarkdown(path.basename(pdfPath));
   }
@@ -342,8 +373,12 @@ export const convertPdfToMarkdown = async (pdfPath: string, jobId: string) => {
   const outputPath = path.join(outputDir, 'paper.md');
   await fs.writeFile(outputPath, markdown, 'utf8');
 
+  const mappingPath = path.join(outputDir, 'image-mapping.json');
+  await fs.writeFile(mappingPath, JSON.stringify(Object.fromEntries(imageMapping), null, 2));
+
   return {
     markdown,
+    imageMapping,
     docPath: toRelativePath(outputPath)
   };
 };

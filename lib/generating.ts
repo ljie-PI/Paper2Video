@@ -149,11 +149,40 @@ export const generateSlides = async (
   }
 };
 
+const loadImageMapping = async (jobId: string): Promise<Map<string, string>> => {
+  const outputDir = outputsDir(jobId);
+  const mappingPath = path.join(outputDir, 'image-mapping.json');
+  try {
+    const mappingData = await fs.readFile(mappingPath, 'utf8');
+    const mappingObj = JSON.parse(mappingData);
+    return new Map(Object.entries(mappingObj));
+  } catch {
+    logger.debug('[generating] no image mapping found, using empty mapping');
+    return new Map();
+  }
+};
+
+const restoreImagePaths = (slides: SlidesJSON, imageMapping: Map<string, string>): SlidesJSON => {
+  return {
+    slides: slides.slides.map(slide => ({
+      ...slide,
+      images: slide.images.map(image => ({
+        ...image,
+        path: imageMapping.get(image.path) || image.path
+      }))
+    }))
+  };
+};
+
 export const writeSlidesJson = async (jobId: string, slides: SlidesJSON) => {
+  // Load image mapping and restore full paths
+  const imageMapping = await loadImageMapping(jobId);
+  const restoredSlides = restoreImagePaths(slides, imageMapping);
+
   const outputDir = outputsDir(jobId);
   await fs.mkdir(outputDir, { recursive: true });
   const filePath = path.join(outputDir, 'slides.json');
-  await fs.writeFile(filePath, JSON.stringify(slides, null, 2));
+  await fs.writeFile(filePath, JSON.stringify(restoredSlides, null, 2));
   logger.debug('[generating] slides.json written to', filePath);
   return toRelativePath(filePath);
 };

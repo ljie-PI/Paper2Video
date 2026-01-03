@@ -55,7 +55,7 @@ const loadMarkdownFromJob = async (
     const raw = await fs.readFile(toAbsolutePath(docPath), 'utf8');
     return { markdown: raw, docPath };
   }
-  return null;
+  return { markdown: '', docPath: null };
 };
 
 const loadSlidesFromJob = async (
