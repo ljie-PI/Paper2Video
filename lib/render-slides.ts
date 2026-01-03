@@ -3,7 +3,7 @@ import path from 'path';
 import { pathToFileURL } from 'node:url';
 import puppeteer from 'puppeteer';
 import type { JobConfig, Slide, SlideImage, SlidesJSON } from './types';
-import { getPrompt } from './prompts';
+import { getPrompt, renderTemplate } from './prompts';
 import { logger } from './logger';
 import { requestLlmText } from './llm';
 import { outputsDir, toRelativePath } from './storage';
@@ -147,7 +147,7 @@ const renderLayoutTemplate = async (
 const generateSlideHtml = async (
   slide: Slide,
   config: JobConfig,
-  promptTemplate: string,
+  systemPrompt: string,
   baseDir: string,
   slideIndex: number,
   outputDir: string
@@ -173,7 +173,7 @@ const generateSlideHtml = async (
     const userPrompt = buildUserPrompt(slide, slide.images ?? [], baseDir);
     const responseText = await requestLlmText({
       model: config.model?.trim() ?? null,
-      systemPrompt: promptTemplate,
+      systemPrompt,
       userPrompt
     });
 
@@ -432,6 +432,12 @@ export const renderSlides = async (
 
   await ensureSharedRevealDist();
 
+  const languageHints = { zh: 'Chinese.', en: 'English.' } as const;
+  const languageHint = config.outputLanguage
+    ? languageHints[config.outputLanguage]
+    : '';
+  const systemPrompt = renderTemplate(promptTemplate, { languageHint });
+
   const renderConcurrency = Math.max(
     1,
     Number.parseInt(process.env.RENDER_SLIDES_CONCURRENCY ?? '1', 10) || 1
@@ -445,7 +451,7 @@ export const renderSlides = async (
       const selection = await generateSlideHtml(
         slide,
         config,
-        promptTemplate,
+        systemPrompt,
         outputDir,
         index,
         outputDir
