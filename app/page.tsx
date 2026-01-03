@@ -16,7 +16,7 @@ const formatBytes = (value: number) => {
 const translations = {
   en: {
     title: 'Turn papers into clear explainer videos.',
-    subtitle: 'Upload a PDF, tune your narration, and generate slides, speaker notes, and a final video.',
+    subtitle: 'Upload a PDF — narration, slides, and video are generated automatically.',
     dragText: 'Drag a PDF here or browse',
     dragSubtext: 'Optimized for long-form research papers',
     uploadBtn: 'Upload PDF',
@@ -63,7 +63,7 @@ const translations = {
   },
   zh: {
     title: '把论文变成清晰的讲解视频。',
-    subtitle: '上传PDF，调整旁白，生成幻灯片、演讲笔记和最终视频。',
+    subtitle: '上传 PDF，自动生成解说、幻灯片和完整视频。',
     dragText: '拖拽PDF到此处或浏览',
     dragSubtext: '专为长篇研究论文优化',
     uploadBtn: '上传PDF',
