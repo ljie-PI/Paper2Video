@@ -281,39 +281,29 @@ export default function HomePage() {
     <main className="min-h-screen px-6 py-12 md:px-12">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
         <header className="flex flex-col gap-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-            <div>
-              <span className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-                Paper2Video Atelier
-              </span>
-              <h1 className="mt-2 text-4xl font-semibold text-ink-900 md:text-5xl">
-                {t.title}
-              </h1>
-              <p className="mt-3 max-w-2xl text-lg text-slate-600">
-                {t.subtitle}
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 md:flex-row md:items-start">
-              <select
-                value={uiLanguage}
-                onChange={(event) => setUiLanguage(event.target.value as 'en' | 'zh')}
-                className="rounded-lg border border-slate-300 bg-slate-50 px-6 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1"
-              >
-                <option value="en">English</option>
-                <option value="zh">中文</option>
-              </select>
-              {job ? (
-                <span
-                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
-                    statusMeta[currentStatus].tone
-                  } ${statusMeta[currentStatus].text}`}
-                >
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-current" />
-                  {getStatusLabel(currentStatus)}
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div>
+                <span className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Paper2Video Atelier
                 </span>
-              ) : null}
+                <h1 className="mt-2 text-4xl font-semibold text-ink-900 md:text-5xl">
+                  {t.title}
+                </h1>
+                <p className="mt-3 max-w-2xl text-lg text-slate-600">
+                  {t.subtitle}
+                </p>
+              </div>
+              <div className="flex flex-col gap-3 md:flex-row md:items-start">
+                <select
+                  value={uiLanguage}
+                  onChange={(event) => setUiLanguage(event.target.value as 'en' | 'zh')}
+                  className="rounded-lg border border-slate-300 bg-slate-50 px-6 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1"
+                >
+                  <option value="en">English</option>
+                  <option value="zh">中文</option>
+                </select>
+              </div>
             </div>
-          </div>
         </header>
 
         <section className="grid items-start gap-6 lg:grid-cols-[1.3fr_0.7fr]">
@@ -489,6 +479,19 @@ export default function HomePage() {
 
           <div className="flex flex-col gap-6">
             <div className="rounded-3xl border border-slate-200/70 bg-gradient-to-br from-white/95 via-white/85 to-sky-50/60 p-6 text-slate-700 shadow-card backdrop-blur">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-base font-semibold text-slate-800">Pipeline Progress</h2>
+                {job ? (
+                  <span
+                    className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
+                      statusMeta[currentStatus].tone
+                    } ${statusMeta[currentStatus].text}`}
+                  >
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-current" />
+                    {getStatusLabel(currentStatus)}
+                  </span>
+                ) : null}
+              </div>
               <div className="flex flex-col gap-4">
                 {stages.map((stage) => {
                   const failed = job?.status === 'failed';
