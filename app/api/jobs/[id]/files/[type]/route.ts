@@ -21,14 +21,15 @@ const downloadNames: Record<string, string> = {
 
 export async function GET(
   _: Request,
-  { params }: { params: { id: string; type: string } }
+  { params }: { params: Promise<{ id: string; type: string }> }
 ) {
-  const job = await getJob(params.id);
+  const { id, type } = await params;
+  const job = await getJob(id);
   if (!job) {
     return NextResponse.json({ error: 'Job not found.' }, { status: 404 });
   }
 
-  const filePath = job.paths?.[params.type as keyof typeof job.paths];
+  const filePath = job.paths?.[type as keyof typeof job.paths];
   if (!filePath) {
     return NextResponse.json({ error: 'File not available.' }, { status: 404 });
   }
@@ -39,10 +40,10 @@ export async function GET(
 
   try {
     const data = await fs.readFile(absolutePath);
-    const fileName = downloadNames[params.type] ?? params.type;
+    const fileName = downloadNames[type] ?? type;
     return new NextResponse(data, {
       headers: {
-        'Content-Type': contentTypes[params.type] ?? 'application/octet-stream',
+        'Content-Type': contentTypes[type] ?? 'application/octet-stream',
         'Content-Disposition': `attachment; filename="${fileName}"`
       }
     });
