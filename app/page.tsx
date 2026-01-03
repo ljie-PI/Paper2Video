@@ -74,7 +74,7 @@ export default function HomePage() {
   const [enableVideo, setEnableVideo] = useState(true);
   const [voiceClone, setVoiceClone] = useState(false);
   const [ttsSpeed, setTtsSpeed] = useState(1);
-  const [outputLanguage, setOutputLanguage] = useState<'en' | 'zh'>('en');
+  const [outputLanguage, setOutputLanguage] = useState<'en' | 'zh'>('zh');
   const [dragActive, setDragActive] = useState(false);
   const [job, setJob] = useState<JobRecord | null>(null);
   const [outputSnapshot, setOutputSnapshot] = useState<JobRecord | null>(null);
