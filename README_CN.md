@@ -2,7 +2,7 @@
 
 ![UI 界面截图](./docs/ScreenShot_Paper2Video_CN.png)
 
-将密密麻麻的学术论文转化为电影级科普视频，具备 AI 驱动的旁白、自动幻灯片生成和专业视频制作功能。
+把论文变成清晰的讲解视频，具备 AI 驱动的旁白、自动幻灯片生成和专业视频制作功能。
 
 [View in English](./README.md)
 

@@ -15,7 +15,7 @@ const formatBytes = (value: number) => {
 
 const translations = {
   en: {
-    title: 'From dense papers to cinematic explainers.',
+    title: 'Turn papers into clear explainer videos.',
     subtitle: 'Upload a PDF, tune your narration, and generate slides, speaker notes, and a final video.',
     dragText: 'Drag a PDF here or browse',
     dragSubtext: 'Optimized for long-form research papers',
@@ -62,7 +62,7 @@ const translations = {
     createError: 'Failed to create job.'
   },
   zh: {
-    title: '让密密麻麻的论文，秒变电影级科普。',
+    title: '把论文变成清晰的讲解视频。',
     subtitle: '上传PDF，调整旁白，生成幻灯片、演讲笔记和最终视频。',
     dragText: '拖拽PDF到此处或浏览',
     dragSubtext: '专为长篇研究论文优化',
@@ -345,7 +345,7 @@ export default function HomePage() {
             </div>
 
             <div className="mt-6 grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
-              <div className="flex h-[580px] flex-col rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="flex h-[620px] flex-col rounded-2xl border border-slate-200 bg-white p-4">
                 <p className="text-sm font-semibold text-slate-700">{t.pdfPreview}</p>
                 {pdfFile ? (
                   <div className="mt-3 flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
