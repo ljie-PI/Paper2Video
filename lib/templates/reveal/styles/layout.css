@@ -118,6 +118,7 @@
 .reveal .slides .layout-image-right img,
 .reveal .slides .layout-image-left img {
   width: 1152px;
+  max-height: 600px;
   height: auto;
   display: block;
   margin: 0 auto;
