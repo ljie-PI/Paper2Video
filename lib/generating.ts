@@ -135,14 +135,17 @@ const requestSlidesFromLlm = async (
 export const generateSlides = async (
   markdown: string,
   config: JobConfig,
-  jobId: string
+  jobId?: string
 ): Promise<SlidesJSON> => {
   const start = Date.now();
   try {
     const llmSlides = await requestSlidesFromLlm(markdown, config);
     if (llmSlides) {
-      const imageMapping = await loadImageMapping(jobId);
-      return restoreImagePaths(llmSlides, imageMapping);
+      if (jobId) {
+        const imageMapping = await loadImageMapping(jobId);
+        return restoreImagePaths(llmSlides, imageMapping);
+      }
+      return llmSlides;
     }
 
     throw new Error('Failed to generate slides from LLM response.');
