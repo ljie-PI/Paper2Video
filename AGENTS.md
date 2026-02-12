@@ -3,7 +3,7 @@
 ## Project Structure & Module Organization
 - `app/`: Next.js App Router pages and API routes (`app/page.tsx`, `app/api/**`).
 - `constants/`: shared constants and configuration values.
-- `lib/`: pipeline logic and helpers (Docling stub, generating, rendering, job store).
+- `lib/`: pipeline logic and helpers (MinerU integration, generating, rendering, job store).
 - `storage/`: local runtime artifacts (`uploads/`, `outputs/`, `jobs.json`), ignored by git.
 - `public/`: static assets (currently empty).
 
@@ -26,11 +26,11 @@
 
 ## Commit & Pull Request Guidelines
 - No commit history is present yet; no existing message convention to follow.
-- Recommended: use Conventional Commits (e.g., `feat: add docling adapter`).
+- Recommended: use Conventional Commits (e.g., `feat: add mineru adapter`).
 - PRs should include a short description, linked issues (if any), and screenshots for UI changes.
 
 ## Security & Configuration Tips
 - External services are optional; configure via `.env`/`.env.local` (see `.env.example`):
-  - `DOCLING_URL` for PDF parsing.
+  - `MINERU_API_KEY` and MinerU endpoints for PDF parsing.
   - `QWEN_API_KEY` for LLM summarization (stubbed today).
 - Uploaded PDFs and generated outputs are stored under `storage/` on the local filesystem.
