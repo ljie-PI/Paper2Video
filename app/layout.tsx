@@ -9,7 +9,7 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: 'Paper2Video',
-  description: 'PDF papers to slides and video, powered by MinerU and Reveal.'
+  description: 'PDF papers to slides and video, powered by Docling and Reveal.'
 };
 
 export default function RootLayout({

@@ -2,7 +2,7 @@
 
 ## Abstract
 - This is a placeholder summary generated locally.
-- Connect your MinerU service to replace this output.
+- Connect your Docling service to replace this output.
 
 ## Method
 - Outline the pipeline stages.

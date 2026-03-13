@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { convertPdfToMarkdown } from './mineru';
+import { convertPdfToMarkdown } from './docling';
 import { generateSlides, writeSlidesJson } from './generating';
 import { renderSlides } from './render-slides';
 import { generateSlideNarrations } from './tts';
