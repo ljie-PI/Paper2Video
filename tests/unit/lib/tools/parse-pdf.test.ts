@@ -9,7 +9,7 @@ vi.mock('zod', async () => {
   return actual;
 });
 
-vi.mock('@/lib/docling', () => ({
+vi.mock('@/lib/mineru', () => ({
   convertPdfToMarkdown: vi.fn(),
 }));
 
@@ -18,7 +18,7 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 import { parsePdf } from '@/lib/tools/parse-pdf';
-import { convertPdfToMarkdown } from '@/lib/docling';
+import { convertPdfToMarkdown } from '@/lib/mineru';
 
 const mockConvert = vi.mocked(convertPdfToMarkdown);
 

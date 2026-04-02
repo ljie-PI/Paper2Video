@@ -1,6 +1,6 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import { convertPdfToMarkdown } from '@/lib/docling';
+import { convertPdfToMarkdown } from '@/lib/mineru';
 import { logger } from '@/lib/logger';
 
 export const parsePdf = tool({
