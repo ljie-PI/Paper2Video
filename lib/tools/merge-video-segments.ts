@@ -1,5 +1,6 @@
 import { tool } from 'ai';
 import { z } from 'zod';
+import { mergeSegments } from '@/lib/remotion-render';
 import { logger } from '@/lib/logger';
 
 export const mergeVideoSegments = tool({
@@ -13,15 +14,13 @@ export const mergeVideoSegments = tool({
     try {
       logger.info(`[merge-video-segments] Merging ${segmentPaths.length} segments for session ${sessionId}`);
 
-      // TODO: Phase 3 will implement actual FFmpeg concat
-      const fileName = outputFileName ?? 'final.mp4';
-      const outputPath = `storage/sessions/${sessionId}/${fileName}`;
+      const outputPath = await mergeSegments(sessionId, segmentPaths, outputFileName);
 
       return {
         success: true,
         videoPath: outputPath,
         segmentCount: segmentPaths.length,
-        message: `Final video merged from ${segmentPaths.length} segments: ${fileName}`,
+        message: `Final video merged from ${segmentPaths.length} segments.`,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
