@@ -1,9 +1,12 @@
 import { spawn } from 'node:child_process';
 
+const isWindows = process.platform === 'win32';
+
 const run = (cmd, args, options = {}) => {
   return spawn(cmd, args, {
     stdio: 'inherit',
     env: process.env,
+    shell: isWindows,
     ...options
   });
 };
