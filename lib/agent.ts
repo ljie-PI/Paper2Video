@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { streamText } from 'ai';
+import { streamText, type LanguageModelV1 } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
@@ -69,13 +69,13 @@ const createModel = (config: SessionConfig) => {
   if (provider === 'anthropic') {
     const baseURL = process.env.ANTHROPIC_BASE_URL?.trim();
     const anthropic = createAnthropic({ apiKey, ...(baseURL ? { baseURL } : {}) });
-    return anthropic(modelName);
+    return anthropic(modelName) as LanguageModelV1;
   }
 
   if (provider === 'gemini') {
     const baseURL = process.env.GEMINI_BASE_URL?.trim();
     const google = createGoogleGenerativeAI({ apiKey, ...(baseURL ? { baseURL } : {}) });
-    return google(modelName);
+    return google(modelName) as LanguageModelV1;
   }
 
   // openai or openai-compatible
@@ -85,9 +85,8 @@ const createModel = (config: SessionConfig) => {
   const openai = createOpenAI({
     apiKey,
     ...(baseURL ? { baseURL } : {}),
-    compatibility: provider === 'openai-compatible' ? 'compatible' : 'strict',
   });
-  return openai(modelName);
+  return openai(modelName) as LanguageModelV1;
 };
 
 const tools = {

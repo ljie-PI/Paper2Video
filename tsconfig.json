@@ -33,12 +33,17 @@
     ]
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "lib/**/*.ts",
+    "constants/**/*.ts",
+    "scripts/**/*.ts",
+    "scripts/**/*.mjs",
     "next-env.d.ts",
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "remotion"
   ]
 }

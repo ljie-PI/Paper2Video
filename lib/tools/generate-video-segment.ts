@@ -17,7 +17,7 @@ export const generateVideoSegment = tool({
     segmentId: z.string().describe('The segment ID to render'),
     sessionId: z.string().describe('Current session ID'),
     template: z.enum(['title', 'narration', 'image', 'side-by-side', 'table']).describe('Remotion template to use'),
-    props: z.record(z.unknown()).describe('Template props (title, content, imageUrl, audioPath, etc.)'),
+    props: z.record(z.string(), z.unknown()).describe('Template props (title, content, imageUrl, audioPath, etc.)'),
     durationInFrames: z.number().optional().describe('Duration in frames (30fps). Defaults based on audio length.'),
     audioDurationSeconds: z.number().optional().describe('Audio duration in seconds, used to calculate frames if durationInFrames not set.'),
   }),

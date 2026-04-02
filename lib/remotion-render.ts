@@ -33,7 +33,7 @@ export const renderSegment = async (input: RenderSegmentInput): Promise<string> 
     const { renderMedia, selectComposition } = await import('@remotion/renderer');
 
     logger.info(`[remotion] Bundling for segment ${input.segmentId}...`);
-    const bundled = await bundle({ entryPoint, webpackOverride: (config) => config });
+    const bundled = await bundle({ entryPoint, webpackOverride: (config: unknown) => config });
 
     const composition = await selectComposition({
       serveUrl: bundled,
