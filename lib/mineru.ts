@@ -10,7 +10,7 @@ import {
   MINERU_POLL_TIMEOUT_MS,
   MINERU_MODEL_VERSION,
 } from '@/constants/mineru';
-import { PNG_SIGNATURE } from '@/constants/docling';
+import { PNG_SIGNATURE } from '@/constants/mineru';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
