@@ -8,7 +8,7 @@ Transform academic papers into clear video explainers with AI-powered narration,
 
 ## Features
 
-- **PDF Analysis**: Extract structured content from research papers using Docling
+- **PDF Analysis**: Extract structured content from research papers using [MinerU](https://mineru.net/) cloud API
 - **Slide Generation**: AI-powered content summarization and slide layout design
 - **Multi-language Support**: Generate slides and narration in English or Chinese
 - **Voice Cloning**: Custom TTS with voice sample cloning capabilities
@@ -17,45 +17,11 @@ Transform academic papers into clear video explainers with AI-powered narration,
 
 ## Prerequisites
 
-### 1. Docling-serve with Podman
+### 1. MinerU API Key
 
-This project uses [Docling-serve](https://github.com/docling-project/docling-serve) for PDF parsing, which requires [Podman](https://podman.io/) to run containerized services.
+This project uses [MinerU](https://mineru.net/) for PDF parsing. Sign up at https://mineru.net/ to get an API key, then set `MINERU_API_KEY` in your `.env.local`.
 
-**Install Podman:**
-
-```bash
-# Ubuntu/Debian
-sudo apt-get update
-sudo apt-get install -y podman
-
-# Or follow the official installation guide for your OS
-# https://podman.io/docs/installation
-```
-
-### 2. GPU Support (Optional but Recommended)
-
-If you have an NVIDIA GPU and want to use GPU acceleration:
-
-1. Install NVIDIA drivers for your system
-2. Install nvidia-container-toolkit:
-
-```bash
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | \
-  sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-
-sudo apt-get update
-sudo apt-get install -y nvidia-container-toolkit
-```
-
-3. Generate CDI specification:
-
-```bash
-sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
-```
-
-### 3. System Fonts for PDF Rendering
+### 2. System Fonts for PDF Rendering
 
 The slide rendering requires system fonts. For proper Chinese text rendering:
 
@@ -103,9 +69,7 @@ Start the development server:
 bun run dev
 ```
 
-The application will be available at:
-- **Next.js UI**: http://localhost:3000
-- **Docling-serve API**: http://localhost:5001
+The application will be available at http://localhost:3000
 
 ### Production Build
 
@@ -122,7 +86,7 @@ bun run start
 
 See `.env.example` for available configuration options:
 
-- `DOCLING_URL`: Docling-serve endpoint (default: `http://localhost:5001`)
+- `MINERU_API_KEY`: MinerU API key for PDF parsing
 - `LLM_API_KEY`: API key for LLM (for content generation)
 - Additional TTS and video processing settings
 
@@ -136,7 +100,7 @@ This project is licensed under the MIT License.
 
 ## Acknowledgments
 
-- [Docling](https://github.com/docling-project/docling) for PDF parsing
+- [MinerU](https://mineru.net/) for PDF parsing
 - [Next.js](https://nextjs.org/) for the web framework
 - [Reveal.js](https://revealjs.com/) for slide presentation
 - [Puppeteer](https://pptr.dev/) for PDF generation
