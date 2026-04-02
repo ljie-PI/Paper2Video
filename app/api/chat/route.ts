@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { runAgent } from '@/lib/agent';
+import { getSession, updateSession } from '@/lib/session-store';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -14,9 +16,20 @@ export async function POST(request: Request) {
     );
   }
 
-  // TODO: Phase 2 will implement agent streaming via streamText()
-  return NextResponse.json({
-    message: 'Chat endpoint ready. Agent implementation pending.',
-    sessionId,
+  const session = await getSession(sessionId);
+  if (!session) {
+    return NextResponse.json(
+      { error: 'Session not found.' },
+      { status: 404 }
+    );
+  }
+
+  await updateSession(sessionId, { status: 'running' });
+
+  const result = await runAgent({
+    config: session.config,
+    messages,
   });
+
+  return result.toDataStreamResponse();
 }
