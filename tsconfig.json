@@ -39,6 +39,9 @@
     "constants/**/*.ts",
     "scripts/**/*.ts",
     "scripts/**/*.mjs",
+    "__tests__/**/*.ts",
+    "__tests__/**/*.tsx",
+    "vitest.config.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts"
   ],
