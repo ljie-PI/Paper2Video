@@ -48,6 +48,9 @@ cd Paper2Video
 # 如果尚未安装 Bun
 curl -fsSL https://bun.sh/install | bash
 
+# 让当前 shell 可以直接使用 Bun
+export PATH="$HOME/.bun/bin:$PATH"
+
 # 安装项目依赖
 bun install
 ```
@@ -55,9 +58,25 @@ bun install
 3. 配置环境变量：
 
 ```bash
-cp .env.example .env
-# 编辑 .env 文件，配置您的 API 密钥和设置
+cp .env.example .env.local
+# 如果需要实际跑完整流程，再编辑 .env.local 填入 API 密钥和设置
 ```
+
+## 一键校验
+
+在新环境或 CI 中，先安装一次 Playwright Chromium 浏览器：
+
+```bash
+bun run test:e2e:install
+```
+
+然后执行完整校验：
+
+```bash
+bun run validate
+```
+
+`bun run validate` 会按顺序执行 `lint`、`test`、`test:e2e`、`build`。只做这套校验时，复制 `.env.example` 到 `.env.local` 就够了；只有在实际运行 PDF / LLM / TTS 流程时才需要填真实密钥。CI 里的 `.github/workflows/validate.yml` 也复用了同一套命令。
 
 ## 使用方法
 
