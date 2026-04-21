@@ -7,7 +7,7 @@ vi.mock('extract-zip', () => ({ default: vi.fn() }));
 vi.mock('@/lib/storage', () => ({
   storageRoot: '/mock/storage',
   outputsDir: (jobId: string) => `/mock/storage/outputs/${jobId}`,
-  toRelativePath: (p: string) => p.replace('/mock/cwd/', ''),
+  toRelativePath: (p: string) => path.relative(process.cwd(), p),
 }));
 vi.mock('@/lib/logger', () => ({
   logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },

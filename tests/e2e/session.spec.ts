@@ -18,10 +18,17 @@ test.describe('Session management', () => {
     // Count existing session entries before clicking
     const countBefore = await nav.locator('button').count();
 
+    const createSessionRequest = page.waitForResponse((response) => (
+      response.request().method() === 'POST'
+      && response.url().includes('/api/sessions')
+      && response.ok()
+    ));
+
     // Click the "New" button
     await sidebar.getByRole('button', { name: /new/i }).click();
+    await createSessionRequest;
 
-    // A new entry should appear in the session list
-    await expect(nav.locator('button')).toHaveCount(countBefore + 1);
+    // Other tests may create sessions in parallel, so only require growth.
+    await expect.poll(async () => nav.locator('button').count()).toBeGreaterThan(countBefore);
   });
 });

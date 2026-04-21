@@ -12,5 +12,9 @@ export const jobDir = (jobId: string) => path.join(storageRoot, jobId);
 
 export const jobFile = (jobId: string) => path.join(jobDir(jobId), 'job.json');
 
-export const toRelativePath = (absolutePath: string) =>
-  absolutePath.replace(process.cwd() + path.sep, '');
+export const toRelativePath = (filePath: string) => {
+  if (!path.isAbsolute(filePath)) return filePath;
+
+  const relativePath = path.relative(process.cwd(), filePath);
+  return (relativePath || '.').split(path.sep).join('/');
+};
