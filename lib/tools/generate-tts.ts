@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { synthesizeTtsText } from '@/lib/tts';
 import { sessionDir } from '@/lib/session-store';
+import { toRelativePath } from '@/lib/storage';
 import { logger } from '@/lib/logger';
 
 export const generateTts = tool({
@@ -27,7 +28,7 @@ export const generateTts = tool({
       const filePath = path.join(ttsDir, fileName);
       await fs.writeFile(filePath, result.audio.buffer);
 
-      const relativePath = `storage/sessions/${sessionId}/tts/${fileName}`;
+      const relativePath = toRelativePath(filePath);
       logger.info(`[generate-tts] Audio saved: ${relativePath}`);
       return {
         success: true,

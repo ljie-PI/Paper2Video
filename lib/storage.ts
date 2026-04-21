@@ -12,9 +12,34 @@ export const jobDir = (jobId: string) => path.join(storageRoot, jobId);
 
 export const jobFile = (jobId: string) => path.join(jobDir(jobId), 'job.json');
 
-export const toRelativePath = (filePath: string) => {
-  if (!path.isAbsolute(filePath)) return filePath;
+const isWindowsAbsolutePath = (value: string) =>
+  /^[A-Za-z]:[\\/]/.test(value) || value.startsWith('\\\\');
 
-  const relativePath = path.relative(process.cwd(), filePath);
-  return (relativePath || '.').split(path.sep).join('/');
+const isAbsolutePath = (value: string) =>
+  path.posix.isAbsolute(value) || path.win32.isAbsolute(value);
+
+const normalizeRelativePath = (value: string) => {
+  const normalized = path.posix.normalize(value.replace(/\\/g, '/'));
+  return normalized === '' ? '.' : normalized.replace(/^\.\//, '');
+};
+
+export const toRelativePath = (filePath: string) => {
+  if (!isAbsolutePath(filePath)) {
+    return normalizeRelativePath(filePath);
+  }
+
+  const cwd = process.cwd();
+  const pathApi =
+    isWindowsAbsolutePath(filePath) || isWindowsAbsolutePath(cwd)
+      ? path.win32
+      : path.posix;
+  const relativePath = normalizeRelativePath(
+    pathApi.relative(pathApi.normalize(cwd), pathApi.normalize(filePath))
+  );
+
+  if (relativePath === '..' || relativePath.startsWith('../')) {
+    throw new Error(`Path is outside repository root: ${filePath}`);
+  }
+
+  return relativePath;
 };

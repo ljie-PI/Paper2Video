@@ -1,3 +1,4 @@
+import path from 'path';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('ai', () => ({
@@ -21,7 +22,7 @@ vi.mock('@/lib/tts', () => ({
 }));
 
 vi.mock('@/lib/session-store', () => ({
-  sessionDir: vi.fn((id: string) => `/mock/storage/sessions/${id}`),
+  sessionDir: vi.fn((id: string) => path.join(process.cwd(), 'storage', 'sessions', id)),
 }));
 
 vi.mock('@/lib/logger', () => ({
@@ -30,10 +31,12 @@ vi.mock('@/lib/logger', () => ({
 
 import fs from 'fs/promises';
 import { synthesizeTtsText } from '@/lib/tts';
+import { sessionDir } from '@/lib/session-store';
 import { generateTts } from '@/lib/tools/generate-tts';
 
 const mockFs = vi.mocked(fs);
 const mockTts = vi.mocked(synthesizeTtsText);
+const mockSessionDir = vi.mocked(sessionDir);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -150,5 +153,21 @@ describe('generateTts', () => {
 
     expect(result.audioPath).toContain('seg-001.ogg');
     expect(result.format).toBe('ogg');
+  });
+
+  it('normalizes Windows-style session paths to repo-relative audioPath', async () => {
+    vi.spyOn(process, 'cwd').mockReturnValue('C:\\repo\\Paper2Video');
+    mockSessionDir.mockImplementationOnce((id: string) =>
+      path.win32.join('C:\\repo\\Paper2Video', 'storage', 'sessions', id)
+    );
+    mockTts.mockResolvedValue({
+      audio: { buffer: Buffer.from('data'), extension: 'wav' },
+      voice: 'default',
+      languageType: 'English',
+    });
+
+    const result = await generateTts.execute(baseParams, {} as any);
+
+    expect(result.audioPath).toBe('storage/sessions/sess-123/tts/seg-001.wav');
   });
 });

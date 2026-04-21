@@ -21,6 +21,7 @@ import { parsePdf } from '@/lib/tools/parse-pdf';
 import { convertPdfToMarkdown } from '@/lib/mineru';
 
 const mockConvert = vi.mocked(convertPdfToMarkdown);
+const DOC_PATH = 'storage/outputs/sess-1/paper.md';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -34,8 +35,8 @@ describe('parsePdf', () => {
   it('returns markdown and image count on success', async () => {
     mockConvert.mockResolvedValue({
       markdown: '# Paper Title\n\nContent here',
-      imageMapping: new Map([['fig1', '/images/fig1.png'], ['fig2', '/images/fig2.png']]),
-      docPath: '/mock/doc.md',
+      imageMapping: new Map([['fig1', 'artifacts/fig1.png'], ['fig2', 'artifacts/fig2.png']]),
+      docPath: DOC_PATH,
     });
 
     const result = await parsePdf.execute(
@@ -46,7 +47,7 @@ describe('parsePdf', () => {
     expect(result.success).toBe(true);
     expect(result.markdown).toBe('# Paper Title\n\nContent here');
     expect(result.imageCount).toBe(2);
-    expect(result.docPath).toBe('/mock/doc.md');
+    expect(result.docPath).toBe(DOC_PATH);
     expect(result.message).toContain('PDF parsed successfully');
   });
 
@@ -54,7 +55,7 @@ describe('parsePdf', () => {
     mockConvert.mockResolvedValue({
       markdown: 'content',
       imageMapping: new Map(),
-      docPath: '/mock/doc.md',
+      docPath: DOC_PATH,
     });
 
     await parsePdf.execute(
@@ -69,7 +70,7 @@ describe('parsePdf', () => {
     mockConvert.mockResolvedValue({
       markdown: 'text only',
       imageMapping: new Map(),
-      docPath: '/mock/doc.md',
+      docPath: DOC_PATH,
     });
 
     const result = await parsePdf.execute(
@@ -85,7 +86,7 @@ describe('parsePdf', () => {
     mockConvert.mockResolvedValue({
       markdown: 'text',
       imageMapping: undefined as any,
-      docPath: '/mock/doc.md',
+      docPath: DOC_PATH,
     });
 
     const result = await parsePdf.execute(
@@ -125,8 +126,8 @@ describe('parsePdf', () => {
     const markdown = 'A'.repeat(500);
     mockConvert.mockResolvedValue({
       markdown,
-      imageMapping: new Map([['fig1', '/img/fig1.png']]),
-      docPath: '/mock/doc.md',
+      imageMapping: new Map([['fig1', 'artifacts/fig1.png']]),
+      docPath: DOC_PATH,
     });
 
     const result = await parsePdf.execute(

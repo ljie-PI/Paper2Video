@@ -102,14 +102,13 @@ const resolveCachedAudio = async (
   const entry = cache.slides[String(slideIndex)];
   if (!entry) return null;
   if (entry.hash !== cacheHash) return null;
-  const absolutePath = path.isAbsolute(entry.path)
-    ? entry.path
-    : path.join(process.cwd(), entry.path);
+  const normalizedPath = toRelativePath(entry.path);
+  const absolutePath = path.join(process.cwd(), normalizedPath);
   if (!(await fileExists(absolutePath))) return null;
   return {
     index: slideIndex,
     transcript,
-    path: entry.path,
+    path: normalizedPath,
     format: entry.format
   } as SlideAudio;
 };
