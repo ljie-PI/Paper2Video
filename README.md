@@ -48,6 +48,9 @@ cd Paper2Video
 # Install Bun if not already installed
 curl -fsSL https://bun.sh/install | bash
 
+# Make Bun available in the current shell
+export PATH="$HOME/.bun/bin:$PATH"
+
 # Install project dependencies
 bun install
 ```
@@ -55,9 +58,31 @@ bun install
 3. Configure environment variables:
 
 ```bash
-cp .env.example .env
-# Edit .env and configure your API keys and settings
+cp .env.example .env.local
+# Edit .env.local and configure your API keys and settings if you plan to run the full pipeline
 ```
+
+## Validation
+
+For a fresh local machine, install the Playwright browser once:
+
+```bash
+bun run test:e2e:install
+```
+
+In Ubuntu CI, install Chromium together with its system dependencies:
+
+```bash
+bun run test:e2e:install:ci
+```
+
+Then run the full repository validation in one command:
+
+```bash
+bun run validate
+```
+
+`bun run validate` covers `lint`, `test`, `test:e2e`, and `build` in sequence. Copying `.env.example` to `.env.local` is enough for this validation flow; real API keys are only needed when you run the actual PDF / LLM / TTS pipeline. `.github/workflows/validate.yml` uses the same validation command together with `bun run test:e2e:install:ci` so the CI browser setup stays aligned with the documented scripts.
 
 ## Usage
 

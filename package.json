@@ -10,7 +10,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:install": "bunx playwright install chromium",
+    "test:e2e:install:ci": "bunx playwright install --with-deps chromium",
+    "validate": "bun run lint && bun run test && bun run test:e2e && bun run build"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "1.2.2",
