@@ -23,9 +23,22 @@ const normalizeRelativePath = (value: string) => {
   return normalized === '' ? '.' : normalized.replace(/^\.\//, '');
 };
 
+const assertRepoRelativePath = (relativePath: string, originalPath: string) => {
+  if (
+    relativePath === '..' ||
+    relativePath.startsWith('../') ||
+    isAbsolutePath(relativePath) ||
+    isWindowsAbsolutePath(relativePath)
+  ) {
+    throw new Error(`Path is outside repository root: ${originalPath}`);
+  }
+};
+
 export const toRelativePath = (filePath: string) => {
   if (!isAbsolutePath(filePath)) {
-    return normalizeRelativePath(filePath);
+    const relativePath = normalizeRelativePath(filePath);
+    assertRepoRelativePath(relativePath, filePath);
+    return relativePath;
   }
 
   const cwd = process.cwd();
@@ -33,13 +46,22 @@ export const toRelativePath = (filePath: string) => {
     isWindowsAbsolutePath(filePath) || isWindowsAbsolutePath(cwd)
       ? path.win32
       : path.posix;
-  const relativePath = normalizeRelativePath(
-    pathApi.relative(pathApi.normalize(cwd), pathApi.normalize(filePath))
-  );
+  const normalizedCwd = pathApi.normalize(cwd);
+  const normalizedFilePath = pathApi.normalize(filePath);
+  const cwdRoot = pathApi.parse(normalizedCwd).root;
+  const filePathRoot = pathApi.parse(normalizedFilePath).root;
+  const rootsMatch =
+    pathApi === path.win32
+      ? cwdRoot.toLowerCase() === filePathRoot.toLowerCase()
+      : cwdRoot === filePathRoot;
 
-  if (relativePath === '..' || relativePath.startsWith('../')) {
+  if (!rootsMatch) {
     throw new Error(`Path is outside repository root: ${filePath}`);
   }
 
+  const relativePath = normalizeRelativePath(
+    pathApi.relative(normalizedCwd, normalizedFilePath)
+  );
+  assertRepoRelativePath(relativePath, filePath);
   return relativePath;
 };

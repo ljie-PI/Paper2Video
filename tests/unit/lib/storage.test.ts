@@ -52,10 +52,26 @@ describe('toRelativePath', () => {
     expect(result).toBe('storage/uploads/file.pdf');
   });
 
+  it('throws when a relative path escapes the repo root', () => {
+    expect(() => toRelativePath('../secrets.txt')).toThrow(
+      'Path is outside repository root: ../secrets.txt'
+    );
+    expect(() => toRelativePath('storage/../../secrets.txt')).toThrow(
+      'Path is outside repository root: storage/../../secrets.txt'
+    );
+  });
+
   it('handles Windows-style absolute paths under the repo root', () => {
     vi.spyOn(process, 'cwd').mockReturnValue('C:\\repo\\Paper2Video');
     const result = toRelativePath('C:\\repo\\Paper2Video\\storage\\outputs\\job-1\\paper.md');
     expect(result).toBe('storage/outputs/job-1/paper.md');
+  });
+
+  it('throws when a Windows absolute path is on a different root', () => {
+    vi.spyOn(process, 'cwd').mockReturnValue('C:\\repo\\Paper2Video');
+    expect(() => toRelativePath('D:\\repo\\Paper2Video\\storage\\outputs\\job-1\\paper.md')).toThrow(
+      'Path is outside repository root: D:\\repo\\Paper2Video\\storage\\outputs\\job-1\\paper.md'
+    );
   });
 
   it('throws when an absolute path is outside the repo root', () => {

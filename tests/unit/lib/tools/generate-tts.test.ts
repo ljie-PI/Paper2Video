@@ -1,5 +1,5 @@
 import path from 'path';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { afterEach, describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('ai', () => ({
   tool: (config: any) => config,
@@ -42,6 +42,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockFs.mkdir.mockResolvedValue(undefined);
   mockFs.writeFile.mockResolvedValue(undefined);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('generateTts', () => {

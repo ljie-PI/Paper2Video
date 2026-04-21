@@ -102,7 +102,16 @@ const resolveCachedAudio = async (
   const entry = cache.slides[String(slideIndex)];
   if (!entry) return null;
   if (entry.hash !== cacheHash) return null;
-  const normalizedPath = toRelativePath(entry.path);
+  let normalizedPath: string;
+  try {
+    normalizedPath = toRelativePath(entry.path);
+  } catch (error) {
+    logger.warn(
+      `[tts] ignoring invalid cached audio path for slide ${slideIndex + 1}: ${entry.path}`,
+      error
+    );
+    return null;
+  }
   const absolutePath = path.join(process.cwd(), normalizedPath);
   if (!(await fileExists(absolutePath))) return null;
   return {
