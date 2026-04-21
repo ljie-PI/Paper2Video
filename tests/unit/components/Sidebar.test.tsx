@@ -85,37 +85,86 @@ describe('Sidebar', () => {
     expect(onSelectSession).toHaveBeenCalledWith('s1');
   });
 
-  it('renders settings section with model input, language select, TTS speed slider', () => {
+  it('exposes a Settings region with labelled controls', () => {
     renderSidebar();
-    expect(screen.getByText('Settings')).toBeInTheDocument();
-    expect(screen.getByText('Model')).toBeInTheDocument();
-    expect(screen.getByText('Language')).toBeInTheDocument();
-    expect(screen.getByText('TTS Speed')).toBeInTheDocument();
+    const settings = screen.getByRole('region', { name: 'Settings' });
+    expect(settings).toBeInTheDocument();
 
-    // Model input has correct value
-    const modelInput = screen.getByDisplayValue('gpt-4o');
-    expect(modelInput).toBeInTheDocument();
+    const modelInput = screen.getByRole('textbox', { name: 'Model' });
+    expect(modelInput).toHaveValue('gpt-4o');
 
-    // Language select
-    const langSelect = screen.getByDisplayValue('English');
-    expect(langSelect).toBeInTheDocument();
+    const langSelect = screen.getByRole('combobox', { name: 'Language' });
+    expect(langSelect).toHaveValue('en');
 
-    // TTS speed slider
-    const slider = screen.getByRole('slider');
-    expect(slider).toBeInTheDocument();
+    const slider = screen.getByRole('slider', { name: 'TTS Speed' });
+    expect(slider).toHaveAttribute('min', '0.5');
+    expect(slider).toHaveAttribute('max', '2');
+    expect(slider).toHaveAttribute('step', '0.1');
+    expect(slider).toHaveValue('1');
+  });
+
+  it('label elements are associated with their controls via htmlFor/id', () => {
+    renderSidebar();
+
+    // getByLabelText proves the label->control association end-to-end
+    // (it would fail if either `htmlFor` or the control `id` were missing).
+    const modelInput = screen.getByLabelText('Model');
+    const langSelect = screen.getByLabelText('Language');
+    const slider = screen.getByLabelText('TTS Speed');
+
+    expect(modelInput).toHaveAttribute('id', 'settings-model');
+    expect(langSelect).toHaveAttribute('id', 'settings-language');
+    expect(slider).toHaveAttribute('id', 'settings-tts-speed');
+
+    // Also assert the explicit htmlFor wiring so removing it is caught even
+    // if the inputs still carry a redundant aria-label.
+    const modelLabel = document.querySelector('label[for="settings-model"]');
+    const langLabel = document.querySelector('label[for="settings-language"]');
+    const ttsLabel = document.querySelector('label[for="settings-tts-speed"]');
+    expect(modelLabel).not.toBeNull();
+    expect(langLabel).not.toBeNull();
+    expect(ttsLabel).not.toBeNull();
+    expect(modelLabel).toHaveTextContent('Model');
+    expect(langLabel).toHaveTextContent('Language');
+    expect(ttsLabel).toHaveTextContent('TTS Speed');
   });
 
   it('changing model input calls onConfigChange("model", value)', () => {
     const { onConfigChange } = renderSidebar();
-    const modelInput = screen.getByDisplayValue('gpt-4o');
+    const modelInput = screen.getByRole('textbox', { name: 'Model' });
     fireEvent.change(modelInput, { target: { value: 'claude-3.5' } });
     expect(onConfigChange).toHaveBeenCalledWith('model', 'claude-3.5');
   });
 
   it('changing language select calls onConfigChange("outputLanguage", value)', () => {
     const { onConfigChange } = renderSidebar();
-    const langSelect = screen.getByDisplayValue('English');
+    const langSelect = screen.getByRole('combobox', { name: 'Language' });
     fireEvent.change(langSelect, { target: { value: 'zh' } });
     expect(onConfigChange).toHaveBeenCalledWith('outputLanguage', 'zh');
+  });
+
+  it('changing TTS speed slider calls onConfigChange("ttsSpeed", parsedFloat)', () => {
+    const { onConfigChange } = renderSidebar();
+    const slider = screen.getByRole('slider', { name: 'TTS Speed' });
+    fireEvent.change(slider, { target: { value: '1.5' } });
+    expect(onConfigChange).toHaveBeenCalledWith('ttsSpeed', 1.5);
+  });
+
+  it('respects translated labels (zh) for accessible names', () => {
+    renderSidebar({
+      config: { model: 'gpt-4o', ttsSpeed: 1.0, outputLanguage: 'zh' as const },
+      t: {
+        new: '新建',
+        settings: '设置',
+        model: '模型',
+        outputLanguage: '语言',
+        ttsSpeed: '语音速度',
+        untitled: '未命名',
+      },
+    });
+    expect(screen.getByRole('region', { name: '设置' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: '模型' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: '语言' })).toBeInTheDocument();
+    expect(screen.getByRole('slider', { name: '语音速度' })).toBeInTheDocument();
   });
 });

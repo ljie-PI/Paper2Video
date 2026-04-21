@@ -87,29 +87,50 @@ export const Sidebar: React.FC<Props> = ({
       </nav>
 
       {/* Settings section */}
-      <div className="border-t border-white/5 px-4 py-3 space-y-3">
-        <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-white/40">
-          <Settings size={13} />
+      <section
+        aria-labelledby="sidebar-settings-heading"
+        data-testid="sidebar-settings"
+        className="border-t border-white/5 px-4 py-3 space-y-3"
+      >
+        <div
+          id="sidebar-settings-heading"
+          className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-white/40"
+        >
+          <Settings size={13} aria-hidden="true" />
           {t.settings ?? 'Settings'}
         </div>
 
         {/* Model */}
-        <label className="block space-y-1">
-          <span className="text-[12px] text-white/50">{t.model ?? 'Model'}</span>
+        <div className="block space-y-1">
+          <label
+            htmlFor="settings-model"
+            className="text-[12px] text-white/50 block"
+          >
+            {t.model ?? 'Model'}
+          </label>
           <input
+            id="settings-model"
             type="text"
+            aria-label={t.model ?? 'Model'}
+            data-testid="settings-model-input"
             value={config.model}
             onChange={(e) => onConfigChange('model', e.target.value)}
             className="w-full rounded-md border border-white/10 bg-ink-800 px-2.5 py-1.5 text-xs text-white placeholder-white/30 outline-none transition-colors focus:border-skyline-600/50"
           />
-        </label>
+        </div>
 
         {/* Output Language */}
-        <label className="block space-y-1">
-          <span className="text-[12px] text-white/50">
+        <div className="block space-y-1">
+          <label
+            htmlFor="settings-language"
+            className="text-[12px] text-white/50 block"
+          >
             {t.outputLanguage ?? 'Language'}
-          </span>
+          </label>
           <select
+            id="settings-language"
+            aria-label={t.outputLanguage ?? 'Language'}
+            data-testid="settings-language-select"
             value={config.outputLanguage}
             onChange={(e) => onConfigChange('outputLanguage', e.target.value)}
             className="w-full rounded-md border border-white/10 bg-ink-800 px-2.5 py-1.5 text-xs text-white outline-none transition-colors focus:border-skyline-600/50"
@@ -117,20 +138,30 @@ export const Sidebar: React.FC<Props> = ({
             <option value="zh">中文</option>
             <option value="en">English</option>
           </select>
-        </label>
+        </div>
 
         {/* TTS Speed */}
-        <label className="block space-y-1">
+        <div className="block space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[12px] text-white/50">
+            <label
+              htmlFor="settings-tts-speed"
+              className="text-[12px] text-white/50"
+            >
               {t.ttsSpeed ?? 'TTS Speed'}
-            </span>
-            <span className="text-[11px] tabular-nums text-white/40">
+            </label>
+            <span
+              className="text-[11px] tabular-nums text-white/40"
+              data-testid="settings-tts-speed-value"
+              aria-hidden="true"
+            >
               {config.ttsSpeed.toFixed(1)}x
             </span>
           </div>
           <input
+            id="settings-tts-speed"
             type="range"
+            aria-label={t.ttsSpeed ?? 'TTS Speed'}
+            data-testid="settings-tts-speed-slider"
             min={0.5}
             max={2.0}
             step={0.1}
@@ -138,8 +169,8 @@ export const Sidebar: React.FC<Props> = ({
             onChange={(e) => onConfigChange('ttsSpeed', parseFloat(e.target.value))}
             className="w-full accent-skyline-600"
           />
-        </label>
-      </div>
+        </div>
+      </section>
     </aside>
   );
 };
