@@ -64,10 +64,16 @@ cp .env.example .env.local
 
 ## Validation
 
-For a fresh machine or CI run, install the Playwright browser once:
+For a fresh local machine, install the Playwright browser once:
 
 ```bash
 bun run test:e2e:install
+```
+
+In Ubuntu CI, install Chromium together with its system dependencies:
+
+```bash
+bun run test:e2e:install:ci
 ```
 
 Then run the full repository validation in one command:
@@ -76,7 +82,7 @@ Then run the full repository validation in one command:
 bun run validate
 ```
 
-`bun run validate` covers `lint`, `test`, `test:e2e`, and `build` in sequence. Copying `.env.example` to `.env.local` is enough for this validation flow; real API keys are only needed when you run the actual PDF / LLM / TTS pipeline. The same command is used by `.github/workflows/validate.yml` in CI.
+`bun run validate` covers `lint`, `test`, `test:e2e`, and `build` in sequence. Copying `.env.example` to `.env.local` is enough for this validation flow; real API keys are only needed when you run the actual PDF / LLM / TTS pipeline. `.github/workflows/validate.yml` uses the same validation command together with `bun run test:e2e:install:ci` so the CI browser setup stays aligned with the documented scripts.
 
 ## Usage
 
