@@ -105,13 +105,28 @@ describe('Sidebar', () => {
 
   it('label elements are associated with their controls via htmlFor/id', () => {
     renderSidebar();
-    const modelInput = screen.getByRole('textbox', { name: 'Model' });
-    const langSelect = screen.getByRole('combobox', { name: 'Language' });
-    const slider = screen.getByRole('slider', { name: 'TTS Speed' });
+
+    // getByLabelText proves the label->control association end-to-end
+    // (it would fail if either `htmlFor` or the control `id` were missing).
+    const modelInput = screen.getByLabelText('Model');
+    const langSelect = screen.getByLabelText('Language');
+    const slider = screen.getByLabelText('TTS Speed');
 
     expect(modelInput).toHaveAttribute('id', 'settings-model');
     expect(langSelect).toHaveAttribute('id', 'settings-language');
     expect(slider).toHaveAttribute('id', 'settings-tts-speed');
+
+    // Also assert the explicit htmlFor wiring so removing it is caught even
+    // if the inputs still carry a redundant aria-label.
+    const modelLabel = document.querySelector('label[for="settings-model"]');
+    const langLabel = document.querySelector('label[for="settings-language"]');
+    const ttsLabel = document.querySelector('label[for="settings-tts-speed"]');
+    expect(modelLabel).not.toBeNull();
+    expect(langLabel).not.toBeNull();
+    expect(ttsLabel).not.toBeNull();
+    expect(modelLabel).toHaveTextContent('Model');
+    expect(langLabel).toHaveTextContent('Language');
+    expect(ttsLabel).toHaveTextContent('TTS Speed');
   });
 
   it('changing model input calls onConfigChange("model", value)', () => {

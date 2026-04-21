@@ -25,9 +25,8 @@ test.describe('Settings in sidebar', () => {
     const select = settings.getByRole('combobox', { name: 'Language' });
     await expect(select).toBeVisible();
 
-    // Verify both language options are present (by role).
-    const options = select.getByRole('option');
-    await expect(options).toHaveCount(2);
+    // Verify the required language options are present (by role). We don't
+    // enforce an exact count so adding future locales won't break this test.
     await expect(select.getByRole('option', { name: '中文' })).toBeAttached();
     await expect(select.getByRole('option', { name: 'English' })).toBeAttached();
 

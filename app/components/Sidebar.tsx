@@ -88,7 +88,7 @@ export const Sidebar: React.FC<Props> = ({
 
       {/* Settings section */}
       <section
-        aria-label={t.settings ?? 'Settings'}
+        aria-labelledby="sidebar-settings-heading"
         data-testid="sidebar-settings"
         className="border-t border-white/5 px-4 py-3 space-y-3"
       >
