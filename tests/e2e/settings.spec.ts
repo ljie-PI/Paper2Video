@@ -7,20 +7,13 @@ test.describe('Settings in sidebar', () => {
 
   test('model input field exists', async ({ page }) => {
     const sidebar = page.locator('aside');
-    const modelLabel = sidebar.getByText('Model', { exact: true });
-    await expect(modelLabel).toBeVisible();
-
-    // The text input is inside the same <label> as "Model"
-    const modelInput = sidebar.locator('label', { has: modelLabel }).locator('input[type="text"]');
+    const modelInput = sidebar.getByRole('textbox', { name: 'Model' });
     await expect(modelInput).toBeVisible();
   });
 
   test('language dropdown exists with correct options', async ({ page }) => {
     const sidebar = page.locator('aside');
-    const languageLabel = sidebar.getByText('Language', { exact: true });
-    await expect(languageLabel).toBeVisible();
-
-    const select = sidebar.locator('label', { has: languageLabel }).locator('select');
+    const select = sidebar.getByRole('combobox', { name: 'Language' });
     await expect(select).toBeVisible();
 
     // Verify both language options are present
