@@ -86,8 +86,8 @@ const writeCache = async (cachePath: string, cache: TtsCache) => {
 
 const fileExists = async (filePath: string) => {
   try {
-    await fs.access(filePath);
-    return true;
+    const stat = await fs.stat(filePath);
+    return stat.isFile();
   } catch {
     return false;
   }

@@ -5,14 +5,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const mockMkdir = vi.fn().mockResolvedValue(undefined);
 const mockReadFile = vi.fn();
 const mockWriteFile = vi.fn().mockResolvedValue(undefined);
-const mockAccess = vi.fn();
+const mockStat = vi.fn();
 
 vi.mock('fs/promises', () => ({
   default: {
     mkdir: (...args: unknown[]) => mockMkdir(...args),
     readFile: (...args: unknown[]) => mockReadFile(...args),
     writeFile: (...args: unknown[]) => mockWriteFile(...args),
-    access: (...args: unknown[]) => mockAccess(...args),
+    stat: (...args: unknown[]) => mockStat(...args),
   },
 }));
 
@@ -24,6 +24,7 @@ import { logger } from '@/lib/logger';
 import { generateSlideNarrations } from '@/lib/tts';
 
 const mockLogger = vi.mocked(logger);
+const originalFetch = globalThis.fetch;
 const mockFetch = vi.fn();
 const savedEnv = { ...process.env };
 
@@ -79,7 +80,9 @@ beforeEach(() => {
       },
     })
   );
-  mockAccess.mockResolvedValue(undefined);
+  mockStat.mockResolvedValue({
+    isFile: () => true,
+  });
   mockFetch.mockResolvedValue({
     ok: true,
     status: 200,
@@ -99,6 +102,7 @@ beforeEach(() => {
 
 afterEach(() => {
   process.env = { ...savedEnv };
+  globalThis.fetch = originalFetch;
   vi.restoreAllMocks();
 });
 
@@ -122,5 +126,31 @@ describe('generateSlideNarrations', () => {
       path.join(process.cwd(), 'storage', 'outputs', 'job-1', 'tts', 'slide-001.wav'),
       expect.any(Buffer)
     );
+  });
+
+  it('treats cached directories as a cache miss instead of audio files', async () => {
+    mockReadFile.mockResolvedValue(
+      JSON.stringify({
+        slides: {
+          '0': {
+            hash: makeCacheHash(),
+            path: '.',
+            format: 'wav',
+          },
+        },
+      })
+    );
+    mockStat.mockResolvedValue({
+      isFile: () => false,
+    });
+
+    const result = await generateSlideNarrations(makeSlides(), 'job-1', makeConfig());
+
+    expect(result.audio).toHaveLength(1);
+    expect(result.audio[0]).toMatchObject({
+      path: 'storage/outputs/job-1/tts/slide-001.wav',
+      format: 'wav',
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 });
