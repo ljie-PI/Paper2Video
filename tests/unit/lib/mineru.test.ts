@@ -4,11 +4,15 @@ import path from 'path';
 // ─── Mocks ────────────────────────────────────────────────────
 
 vi.mock('extract-zip', () => ({ default: vi.fn() }));
-vi.mock('@/lib/storage', () => ({
-  storageRoot: '/mock/storage',
-  outputsDir: (jobId: string) => `/mock/storage/outputs/${jobId}`,
-  toRelativePath: (p: string) => path.relative(process.cwd(), p),
-}));
+vi.mock('@/lib/storage', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/storage')>('@/lib/storage');
+  const mockStorageRoot = path.join(process.cwd(), 'storage');
+  return {
+    ...actual,
+    storageRoot: mockStorageRoot,
+    outputsDir: (jobId: string) => path.join(mockStorageRoot, 'outputs', jobId),
+  };
+});
 vi.mock('@/lib/logger', () => ({
   logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
@@ -534,10 +538,7 @@ describe('lib/mineru', () => {
       const { convertPdfToMarkdown } = await import('@/lib/mineru');
       const result = await convertPdfToMarkdown('/path/to/test.pdf', 'job-1');
 
-      expect(result.docPath).toContain('paper.md');
-      // Should not be an absolute path
-      expect(result.docPath).not.toMatch(/^[A-Z]:\\/i);
-      expect(result.docPath).not.toMatch(/^\//);
+      expect(result.docPath).toBe('storage/outputs/job-1/paper.md');
     });
   });
 

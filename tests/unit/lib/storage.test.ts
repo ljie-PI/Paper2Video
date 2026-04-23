@@ -1,6 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import path from 'path';
 import { storageRoot, uploadsDir, outputsDir, jobDir, jobFile, toRelativePath } from '@/lib/storage';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('storageRoot', () => {
   it('points to storage directory under cwd', () => {
@@ -37,16 +41,54 @@ describe('jobFile', () => {
 });
 
 describe('toRelativePath', () => {
-  it('strips cwd prefix from absolute path', () => {
+  it('strips cwd prefix from absolute path and normalizes separators', () => {
     const abs = path.join(process.cwd(), 'storage', 'uploads', 'file.pdf');
     const result = toRelativePath(abs);
-    expect(result).toBe(path.join('storage', 'uploads', 'file.pdf'));
+    expect(result).toBe('storage/uploads/file.pdf');
   });
 
-  it('returns original path if cwd prefix is not present', () => {
+  it('normalizes already-relative paths to forward slashes', () => {
+    const result = toRelativePath('storage\\uploads\\file.pdf');
+    expect(result).toBe('storage/uploads/file.pdf');
+  });
+
+  it('throws when a relative path escapes the repo root', () => {
+    expect(() => toRelativePath('../secrets.txt')).toThrow(
+      'Path is outside repository root: ../secrets.txt'
+    );
+    expect(() => toRelativePath('storage/../../secrets.txt')).toThrow(
+      'Path is outside repository root: storage/../../secrets.txt'
+    );
+  });
+
+  it('handles Windows-style absolute paths under the repo root', () => {
+    vi.spyOn(process, 'cwd').mockReturnValue('C:\\repo\\Paper2Video');
+    const result = toRelativePath('C:\\repo\\Paper2Video\\storage\\outputs\\job-1\\paper.md');
+    expect(result).toBe('storage/outputs/job-1/paper.md');
+  });
+
+  it('throws when a Windows absolute path is on a different root', () => {
+    vi.spyOn(process, 'cwd').mockReturnValue('C:\\repo\\Paper2Video');
+    expect(() => toRelativePath('D:\\repo\\Paper2Video\\storage\\outputs\\job-1\\paper.md')).toThrow(
+      'Path is outside repository root: D:\\repo\\Paper2Video\\storage\\outputs\\job-1\\paper.md'
+    );
+  });
+
+  it('throws when an absolute path is outside the repo root', () => {
+    const foreign = path.join(path.dirname(process.cwd()), 'other', 'dir', 'file.txt');
+    expect(() => toRelativePath(foreign)).toThrow(
+      `Path is outside repository root: ${foreign}`
+    );
+  });
+
+  it('returns dot for the repo root itself', () => {
+    const result = toRelativePath(process.cwd());
+    expect(result).toBe('.');
+  });
+
+  it('preserves clean relative paths', () => {
     const foreign = path.join('other', 'dir', 'file.txt');
     const result = toRelativePath(foreign);
-    // Should return unchanged since cwd prefix isn't present
-    expect(result).toBe(foreign);
+    expect(result).toBe('other/dir/file.txt');
   });
 });

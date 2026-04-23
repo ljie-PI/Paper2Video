@@ -86,8 +86,8 @@ const writeCache = async (cachePath: string, cache: TtsCache) => {
 
 const fileExists = async (filePath: string) => {
   try {
-    await fs.access(filePath);
-    return true;
+    const stat = await fs.stat(filePath);
+    return stat.isFile();
   } catch {
     return false;
   }
@@ -102,14 +102,22 @@ const resolveCachedAudio = async (
   const entry = cache.slides[String(slideIndex)];
   if (!entry) return null;
   if (entry.hash !== cacheHash) return null;
-  const absolutePath = path.isAbsolute(entry.path)
-    ? entry.path
-    : path.join(process.cwd(), entry.path);
+  let normalizedPath: string;
+  try {
+    normalizedPath = toRelativePath(entry.path);
+  } catch (error) {
+    logger.warn(
+      `[tts] ignoring invalid cached audio path for slide ${slideIndex + 1}: ${entry.path}`,
+      error
+    );
+    return null;
+  }
+  const absolutePath = path.join(process.cwd(), normalizedPath);
   if (!(await fileExists(absolutePath))) return null;
   return {
     index: slideIndex,
     transcript,
-    path: entry.path,
+    path: normalizedPath,
     format: entry.format
   } as SlideAudio;
 };
